@@ -13,6 +13,7 @@ TERM_DARK="$HOME/.config/terminator/config.dark"
 PANEL_LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-101"
 APP_DESKTOP="$HOME/.local/share/applications/toggle-theme.desktop"
 SWITCHER_CONFIG="$HOME/.config/theme-switcher/config"
+MANUAL_OVERRIDE="$HOME/.config/theme-switcher/manual_override"
 
 # Читаем иконки из конфига
 ICON_DAY="weather-clear"
@@ -66,21 +67,25 @@ case "${1:-toggle}" in
     light)
         apply_theme "$LIGHT_THEME" "default" "$TERM_LIGHT" \
             "$ICON_DAY" "Дневной режим (нажми чтобы переключить на ночь)"
+        echo "light" > "$MANUAL_OVERRIDE"
         echo "День: $LIGHT_THEME"
         ;;
     dark)
         apply_theme "$DARK_THEME" "prefer-dark" "$TERM_DARK" \
             "$ICON_NIGHT" "Ночной режим (нажми чтобы переключить на день)"
+        echo "dark" > "$MANUAL_OVERRIDE"
         echo "Ночь: $DARK_THEME"
         ;;
     toggle)
         if [ "$CURRENT" = "$DARK_THEME" ]; then
             apply_theme "$LIGHT_THEME" "default" "$TERM_LIGHT" \
                 "$ICON_DAY" "Дневной режим (нажми чтобы переключить на ночь)"
+            echo "light" > "$MANUAL_OVERRIDE"
             echo "День: $LIGHT_THEME"
         else
             apply_theme "$DARK_THEME" "prefer-dark" "$TERM_DARK" \
                 "$ICON_NIGHT" "Ночной режим (нажми чтобы переключить на день)"
+            echo "dark" > "$MANUAL_OVERRIDE"
             echo "Ночь: $DARK_THEME"
         fi
         ;;

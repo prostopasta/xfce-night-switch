@@ -14,6 +14,7 @@ TERM_DARK="$HOME/.config/terminator/config.dark"
 PANEL_LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-101"
 APP_DESKTOP="$HOME/.local/share/applications/toggle-theme.desktop"
 SWITCHER_CONFIG="$HOME/.config/theme-switcher/config"
+MANUAL_OVERRIDE="$HOME/.config/theme-switcher/manual_override"
 
 # Дефолты
 ICON_DAY="weather-clear"
@@ -75,12 +76,45 @@ fi
 NOW=$(date +%H:%M)
 CURRENT=$(xfconf-query -c xsettings -p /Net/ThemeName 2>/dev/null)
 
+# Определяем нужный режим
 if [[ "$NOW" > "$DAY_START" || "$NOW" == "$DAY_START" ]] && [[ "$NOW" < "$DAY_END" ]]; then
-    [ "$CURRENT" != "$LIGHT_THEME" ] && \
-        apply_theme "$LIGHT_THEME" "default" "$TERM_LIGHT" \
-            "$ICON_DAY" "Дневной режим (нажми чтобы переключить на ночь)"
+    WANT_THEME="$LIGHT_THEME"
+    WANT_MODE="default"
+    WANT_TERM="$TERM_LIGHT"
+    WANT_ICON="$ICON_DAY"
+    WANT_TOOLTIP="Дневной режим (нажми чтобы переключить на ночь)"
 else
-    [ "$CURRENT" != "$DARK_THEME" ] && \
-        apply_theme "$DARK_THEME" "prefer-dark" "$TERM_DARK" \
-            "$ICON_NIGHT" "Ночной режим (нажми чтобы переключить на день)"
+    WANT_THEME="$DARK_THEME"
+    WANT_MODE="prefer-dark"
+    WANT_TERM="$TERM_DARK"
+    WANT_ICON="$ICON_NIGHT"
+    WANT_TOOLTIP="Ночной режим (нажми чтобы переключить на день)"
+fi
+
+# Проверяем ручное переключение
+if [ -f "$MANUAL_OVERRIDE" ]; then
+    OVERRIDE=$(cat "$MANUAL_OVERRIDE")
+    [ "$WANT_THEME" = "$LIGHT_THEME" ] && WANT_NAME="light" || WANT_NAME="dark"
+    if [ "$OVERRIDE" != "$WANT_NAME" ]; then
+        # Пользователь вручную переключил — расписание не совпадает, ждём
+        exit 0
+    else
+        # Расписание совпало с ручным — очищаем флаг
+        rm -f "$MANUAL_OVERRIDE"
+    fi
+fi
+
+# GTK тема: применяем только если изменилась
+if [ "$CURRENT" != "$WANT_THEME" ]; then
+    apply_theme "$WANT_THEME" "$WANT_MODE" "$WANT_TERM" "$WANT_ICON" "$WANT_TOOLTIP"
+else
+    # GTK тема правильная, но Terminator мог перезаписать свой конфиг
+    # (при закрытии окна / сохранении раскладки) — синхронизируем всегда
+    if [ -f "$WANT_TERM" ]; then
+        TERM_BG=$(grep -m1 "background_color" "$TERM_CONFIG" 2>/dev/null | tr -d ' ')
+        WANT_BG=$(grep -m1 "background_color" "$WANT_TERM" 2>/dev/null | tr -d ' ')
+        if [ "$TERM_BG" != "$WANT_BG" ]; then
+            cp "$WANT_TERM" "$TERM_CONFIG"; sleep 0.1; touch "$TERM_CONFIG"
+        fi
+    fi
 fi
