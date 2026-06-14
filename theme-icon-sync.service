@@ -1,0 +1,12 @@
+[Unit]
+Description=Sync panel theme-toggle icon with current GTK theme
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/theme-icon-sync.sh
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

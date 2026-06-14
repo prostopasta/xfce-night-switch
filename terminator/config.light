@@ -1,0 +1,416 @@
+[global_config]
+  enabled_plugins = ,
+  suppress_multiple_term_dialog = True
+  putty_paste_style_source_clipboard = True
+  title_at_bottom = True
+[keybindings]
+  copy = <Primary>c
+  paste = <Primary>v
+  close_window = <Primary><Shift>q
+[profiles]
+  [[default]]
+    urgent_bell = True
+    background_color = "#1f1d45"
+    cursor_bg_color = "#efbf38"
+    cursor_shape = ibeam
+    font = Fira Code Medium 14
+    foreground_color = "#f8dcc0"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#050404:#bd0013:#4ab118:#e7741e:#0f4ac6:#665993:#70a598:#f8dcc0:#4e7cbf:#fc5f5a:#9eff6e:#efc11a:#1997c6:#9b5953:#c8faf4:#f6f5fb"
+    use_system_font = False
+    bold_is_bright = True
+    copy_on_selection = True
+    title_hide_sizetext = True
+  [[Atom]]
+    allow_bold = False
+    audible_bell = True
+    background_color = "#161719"
+    cursor_shape = ibeam
+    font = Fira Code 14
+    foreground_color = "#c5c8c6"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#000000:#fd5ff1:#87c38a:#ffd7b1:#85befd:#b9b6fc:#85befd:#e0e0e0:#000000:#fd5ff1:#94fa36:#f5ffa8:#96cbfe:#b9b6fc:#85befd:#e0e0e0"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+  [[3024 Night]]
+    allow_bold = False
+    audible_bell = True
+    background_color = "#090300"
+    cursor_shape = ibeam
+    cursor_bg_color = "#a5a2a2"
+    font = Fira Code 14
+    foreground_color = "#a5a2a2"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#090300:#db2d20:#01a252:#fded02:#01a0e4:#a16a94:#b5e4f4:#a5a2a2:#5c5855:#e8bbd0:#3a3432:#4a4543:#807d7c:#d6d5d4:#cdab53:#f7f7f7"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+  [[AdventureTime]]
+    allow_bold = False
+    audible_bell = True
+    background_color = "#1f1d45"
+    cursor_shape = ibeam
+    cursor_bg_color = "#efbf38"
+    font = Fira Code 14
+    foreground_color = "#f8dcc0"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#050404:#bd0013:#4ab118:#e7741e:#0f4ac6:#665993:#70a598:#f8dcc0:#4e7cbf:#fc5f5a:#9eff6e:#efc11a:#1997c6:#9b5953:#c8faf4:#f6f5fb"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+  [[ayu]]
+    allow_bold = False
+    audible_bell = True
+    background_color = "#0f1419"
+    cursor_shape = ibeam
+    cursor_bg_color = "#f29718"
+    font = Fira Code 14
+    foreground_color = "#e6e1cf"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#000000:#ff3333:#b8cc52:#e7c547:#36a3d9:#f07178:#95e6cb:#ffffff:#323232:#ff6565:#eafe84:#fff779:#68d5ff:#ffa3aa:#c7fffd:#ffffff"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+  [[Bim]]
+    allow_bold = False
+    audible_bell = True
+    background_color = "#012849"
+    cursor_shape = ibeam
+    cursor_bg_color = "#c4d0de"
+    font = Fira Code 14
+    foreground_color = "#a9bed8"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#2c2423:#f557a0:#a9ee55:#f5a255:#5ea2ec:#a957ec:#5eeea0:#918988:#918988:#f579b2:#bbee78:#f5b378:#81b3ec:#bb79ec:#81eeb2:#f5eeec"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+  [[Blitz]]
+    allow_bold = False
+    audible_bell = True
+    background_color = "#16141e"
+    cursor_shape = ibeam
+    cursor_bg_color = "#00ecc8"
+    font = Fira Code 14
+    foreground_color = "#00ecc8"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#2e3436:#f70047:#00ff7d:#fcdd42:#26b3d2:#b055f4:#ff8db4:#d3d7cf:#555753:#ff5555:#55ff55:#ffff55:#729fcf:#ff55ff:#34e2e2:#eeeeec"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+  [[BlulocoDark]]
+    allow_bold = False
+    audible_bell = True
+    background_color = "#282c34"
+    cursor_shape = ibeam
+    cursor_bg_color = "#ffcc00"
+    font = Fira Code 14
+    foreground_color = "#b9c0cb"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#41444d:#fc2f52:#25a45c:#ff936a:#3476ff:#7a82da:#4483aa:#cdd4e0:#8f9aae:#ff6480:#3fc56b:#f9c859:#10b1fe:#ff78f8:#5fb9bc:#ffffff"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+  [[Borland]]
+    allow_bold = False
+    audible_bell = True
+    background_color = "#0000a4"
+    cursor_shape = ibeam
+    cursor_bg_color = "#ffa560"
+    font = Fira Code 14
+    foreground_color = "#ffff4e"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#4f4f4f:#ff6c60:#a8ff60:#ffffb6:#96cbfe:#ff73fd:#c6c5fe:#eeeeee:#7c7c7c:#ffb6b0:#ceffac:#ffffcc:#b5dcff:#ff9cfe:#dfdffe:#ffffff"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+  [[Catppuccin_Macchiato]]
+    allow_bold = False
+    audible_bell = True
+    background_color = "#24273a"
+    cursor_shape = ibeam
+    cursor_bg_color = "#f4dbd6"
+    font = Fira Code 14
+    foreground_color = "#cad3f5"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#494d64:#ed8796:#a6da95:#eed49f:#8aadf4:#f5bde6:#8bd5ca:#b8c0e0:#5b6078:#ed8796:#a6da95:#eed49f:#8aadf4:#f5bde6:#8bd5ca:#a5adcb"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+  [[Kibble]]
+    allow_bold = False
+    audible_bell = True
+    background_color = "#0e100a"
+    cursor_shape = ibeam
+    cursor_bg_color = "#9fda9c"
+    font = Fira Code 14
+    foreground_color = "#f7f7f7"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#4d4d4d:#c70031:#29cf13:#d8e30e:#3449d1:#8400ff:#0798ab:#e2d1e3:#5a5a5a:#f01578:#6ce05c:#f3f79e:#97a4f7:#c495f0:#68f2e0:#ffffff"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+  [[default.old]]
+    allow_bold = False
+    audible_bell = True
+    background_color = "#282828"
+    cursor_shape = ibeam
+    cursor_bg_color = "#00ecc8"
+    font = Fira Code 14
+    foreground_color = "#ebdbb2"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#2e3436:#f70047:#00ff7d:#fcdd42:#26b3d2:#b055f4:#ff8db4:#d3d7cf:#555753:#ff5555:#55ff55:#ffff55:#729fcf:#ff55ff:#34e2e2:#eeeeec"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+  [[controlplanes]]
+    allow_bold = False
+    audible_bell = True
+    background_color = "#16141e"
+    cursor_shape = ibeam
+    cursor_bg_color = "#00ecc8"
+    font = Fira Code 11
+    foreground_color = "#00ecc8"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#2e3436:#f70047:#00ff7d:#fcdd42:#26b3d2:#b055f4:#ff8db4:#d3d7cf:#555753:#ff5555:#55ff55:#ffff55:#729fcf:#ff55ff:#34e2e2:#eeeeec"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+  [[light]]
+    urgent_bell = True
+    background_color = "#3584e4"
+    cursor_fg_color = "#16141e"
+    cursor_bg_color = "#00ecc8"
+    cursor_color_default = False
+    font = Fira Code Medium 14
+    foreground_color = "#8ff0a4"
+    show_titlebar = False
+    palette = "#000000:#aa0000:#00aa00:#aa5500:#0000aa:#aa00aa:#00aaaa:#aaaaaa:#555555:#ff5555:#55ff55:#ffff55:#5555ff:#ff55ff:#55ffff:#ffffff"
+    use_system_font = False
+    bold_is_bright = True
+    copy_on_selection = True
+    title_hide_sizetext = True
+    title_transmit_bg_color = "#8ff0a4"
+    title_receive_bg_color = "#f66151"
+  [[dark-Bim]]
+    allow_bold = False
+    audible_bell = True
+    background_color = "#012849"
+    cursor_shape = ibeam
+    cursor_bg_color = "#c4d0de"
+    font = Fira Code Medium 14
+    foreground_color = "#a9bed8"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#2c2423:#f557a0:#a9ee55:#f5a255:#5ea2ec:#a957ec:#5eeea0:#918988:#918988:#f579b2:#bbee78:#f5b378:#81b3ec:#bb79ec:#81eeb2:#f5eeec"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+    title_hide_sizetext = True
+  [[dark-Blitz]]
+    audible_bell = True
+    urgent_bell = True
+    background_color = "#16141e"
+    cursor_shape = ibeam
+    cursor_bg_color = "#00ecc8"
+    font = Fira Code 14
+    foreground_color = "#00ecc8"
+    show_titlebar = False
+    scrollback_infinite = True
+    palette = "#2e3436:#f70047:#00ff7d:#fcdd42:#26b3d2:#b055f4:#ff8db4:#d3d7cf:#555753:#ff5555:#55ff55:#ffff55:#729fcf:#ff55ff:#34e2e2:#eeeeec"
+    custom_command = /usr/bin/fish
+    use_system_font = False
+    copy_on_selection = True
+[layouts]
+  [[default]]
+    [[[child0]]]
+      type = Window
+      parent = ""
+      order = 0
+      position = 1920:0
+      maximised = True
+      fullscreen = False
+      size = 2560, 1044
+      title = limi
+      last_active_term = 33931c05-3861-4fad-9da8-f58d61b431f9
+      last_active_window = True
+    [[[terminal1]]]
+      type = Terminal
+      parent = child0
+      order = 0
+      profile = default
+      uuid = 33931c05-3861-4fad-9da8-f58d61b431f9
+  [[controlplanes]]
+    [[[child0]]]
+      type = Window
+      parent = ""
+      order = 0
+      position = 1920:0
+      maximised = True
+      fullscreen = False
+      size = 2560, 1044
+      title = debian@oct-200-serbia-001: ~
+      last_active_term = cceac325-6a97-4d2a-9edc-4b428f8cbfeb
+      last_active_window = True
+    [[[child1]]]
+      type = HPaned
+      parent = child0
+      order = 0
+      position = 1278
+      ratio = 0.5001956947162427
+    [[[child2]]]
+      type = VPaned
+      parent = child1
+      order = 0
+      position = 688
+      ratio = 0.6621751684311838
+    [[[child3]]]
+      type = VPaned
+      parent = child2
+      order = 0
+      position = 334
+      ratio = 0.4890190336749634
+    [[[terminal4]]]
+      type = Terminal
+      parent = child3
+      order = 0
+      group = controlplanes
+      profile = controlplanes
+      uuid = 33931c05-3861-4fad-9da8-f58d61b431f9
+      command = vagrant ssh controlplane01;clear;bash
+      directory = /home/ps/k8s/beginner/kubeadm-cluster
+    [[[terminal5]]]
+      type = Terminal
+      parent = child3
+      order = 1
+      group = controlplanes
+      profile = controlplanes
+      uuid = a0219341-b7ba-44dd-98a5-1bacbfbc365b
+      command = vagrant ssh controlplane02;clear;bash
+      directory = /home/ps/k8s/beginner/kubeadm-cluster
+    [[[terminal6]]]
+      type = Terminal
+      parent = child2
+      order = 1
+      group = controlplanes
+      profile = controlplanes
+      uuid = eb6cc8e0-4ac8-42df-9566-37fc3575492c
+      command = vagrant ssh controlplane03;clear;bash
+      directory = /home/ps/k8s/beginner/kubeadm-cluster
+    [[[terminal7]]]
+      type = Terminal
+      parent = child1
+      order = 1
+      profile = light
+      uuid = cceac325-6a97-4d2a-9edc-4b428f8cbfeb
+      command = vagrant status;bash
+      directory = /home/ps/k8s/beginner/kubeadm-cluster
+  [[3 cplanes + 2 nodes]]
+    [[[child0]]]
+      type = Window
+      parent = ""
+      order = 0
+      position = 1920:0
+      maximised = True
+      fullscreen = False
+      size = 2560, 1044
+      title = debian@oct-200-serbia-001: ~
+      last_active_term = aaac1e8b-0940-4db7-9746-3c0d0d6fcd3a
+      last_active_window = True
+    [[[child1]]]
+      type = HPaned
+      parent = child0
+      order = 0
+      position = 1278
+      ratio = 0.5001956947162427
+    [[[child2]]]
+      type = VPaned
+      parent = child1
+      order = 0
+      position = 688
+      ratio = 0.6621751684311838
+    [[[child3]]]
+      type = VPaned
+      parent = child2
+      order = 0
+      position = 334
+      ratio = 0.4890190336749634
+    [[[terminal4]]]
+      type = Terminal
+      parent = child3
+      order = 0
+      group = controlplanes
+      profile = controlplanes
+      uuid = 33931c05-3861-4fad-9da8-f58d61b431f9
+      command = vagrant ssh controlplane01;clear;bash
+      directory = /home/ps/k8s/beginner/kubeadm-cluster
+    [[[terminal5]]]
+      type = Terminal
+      parent = child3
+      order = 1
+      group = controlplanes
+      profile = controlplanes
+      uuid = a0219341-b7ba-44dd-98a5-1bacbfbc365b
+      command = vagrant ssh controlplane02;clear;bash
+      directory = /home/ps/k8s/beginner/kubeadm-cluster
+    [[[terminal6]]]
+      type = Terminal
+      parent = child2
+      order = 1
+      group = controlplanes
+      profile = controlplanes
+      uuid = eb6cc8e0-4ac8-42df-9566-37fc3575492c
+      command = vagrant ssh controlplane03;clear;bash
+      directory = /home/ps/k8s/beginner/kubeadm-cluster
+    [[[child7]]]
+      type = VPaned
+      parent = child1
+      order = 1
+      position = 688
+      ratio = 0.6621751684311838
+    [[[child8]]]
+      type = VPaned
+      parent = child7
+      order = 0
+      position = 333
+      ratio = 0.48755490483162517
+    [[[terminal9]]]
+      type = Terminal
+      parent = child8
+      order = 0
+      profile = controlplanes
+      uuid = cceac325-6a97-4d2a-9edc-4b428f8cbfeb
+      command = vagrant status;bash
+      directory = /home/ps/k8s/beginner/kubeadm-cluster
+    [[[terminal10]]]
+      type = Terminal
+      parent = child8
+      order = 1
+      group = nodes
+      profile = controlplanes
+      uuid = aaac1e8b-0940-4db7-9746-3c0d0d6fcd3a
+      command = vagrant ssh node01;clear;bash
+      directory = /home/ps/k8s/beginner/kubeadm-cluster
+    [[[terminal11]]]
+      type = Terminal
+      parent = child7
+      order = 1
+      group = nodes
+      profile = controlplanes
+      uuid = e6277f4b-1440-4620-8bda-98484d3e8c80
+      command = vagrant ssh node02;clear;bash
+      directory = /home/ps/k8s/beginner/kubeadm-cluster
+[plugins]

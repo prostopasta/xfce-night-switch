@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="120" viewBox="0 0 880 120">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1f1d45"/>
+      <stop offset="50%" style="stop-color:#2a2850"/>
+      <stop offset="100%" style="stop-color:#16141e"/>
+    </linearGradient>
+  </defs>
+  <rect width="880" height="120" rx="12" fill="url(#bg)"/>
+
+  <!-- Moon -->
+  <path d="M52 38 a26 26 0 1 1 0 44 a18 18 0 1 0 0-44z" fill="#f8dcc0" opacity="0.95"/>
+
+  <!-- Sun -->
+  <circle cx="820" cy="60" r="16" fill="#fcdd42" opacity="0.9"/>
+  <g stroke="#fcdd42" stroke-width="2.5" opacity="0.7">
+    <line x1="820" y1="34" x2="820" y2="28"/>
+    <line x1="820" y1="86" x2="820" y2="92"/>
+    <line x1="794" y1="60" x2="788" y2="60"/>
+    <line x1="846" y1="60" x2="852" y2="60"/>
+    <line x1="802" y1="42" x2="797" y2="37"/>
+    <line x1="838" y1="78" x2="843" y2="83"/>
+    <line x1="838" y1="42" x2="843" y2="37"/>
+    <line x1="802" y1="78" x2="797" y2="83"/>
+  </g>
+
+  <!-- Title -->
+  <text x="440" y="52" font-family="'SF Mono', 'Fira Code', monospace" font-size="28"
+        font-weight="600" fill="#f8dcc0" text-anchor="middle" letter-spacing="1">
+    xfce4-theme-switcher
+  </text>
+
+  <!-- Subtitle -->
+  <text x="440" y="82" font-family="'SF Mono', 'Fira Code', monospace" font-size="14"
+        fill="#b0a8c8" text-anchor="middle" letter-spacing="0.5">
+    Day ↔ Night GTK theme switcher with panel launcher, icon picker &amp; location scheduling
+  </text>
+
+  <!-- Arrow divider -->
+  <text x="440" y="108" font-family="monospace" font-size="11"
+        fill="#5a5270" text-anchor="middle">
+    bash · yad · XFCE panel · gsettings · NOAA · OpenStreetMap · i18n
+  </text>
+</svg>
