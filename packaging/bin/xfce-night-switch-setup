@@ -16,7 +16,7 @@ echo ""
 echo "Linking scripts to $BIN_DIR ..."
 mkdir -p "$BIN_DIR"
 for f in auto-theme.sh toggle-theme.sh theme-settings.sh \
-          sunrise-sunset.py install-panel-launcher.sh; do
+          sunrise-sunset.py install-panel-launcher.sh auto-update.sh; do
     ln -sf "$SHARE/$f" "$BIN_DIR/$f"
     echo "  $BIN_DIR/$f"
 done
@@ -85,6 +85,9 @@ if systemctl --user show-environment >/dev/null 2>&1; then
     systemctl --user enable --now auto-theme-startup.service 2>/dev/null \
         && echo "  auto-theme-startup.service: enabled" \
         || echo "  auto-theme-startup.service: could not enable — run: systemctl --user enable --now auto-theme-startup.service"
+    systemctl --user enable auto-update.service 2>/dev/null \
+        && echo "  auto-update.service: enabled" \
+        || echo "  auto-update.service: could not enable"
 else
     echo "  systemd --user unavailable — run setup again from a graphical session"
 fi

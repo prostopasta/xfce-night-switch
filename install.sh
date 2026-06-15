@@ -17,7 +17,7 @@ mkdir -p "$BIN" "$CFG/locales" "$APPS" "$ICONS" "$SYSTEMD"
 
 echo "── Scripts ────────────────────────────────────"
 for f in auto-theme.sh toggle-theme.sh theme-settings.sh \
-          install-panel-launcher.sh sunrise-sunset.py; do
+          install-panel-launcher.sh sunrise-sunset.py auto-update.sh; do
     cp "$REPO/$f" "$BIN/$f"
     chmod +x "$BIN/$f"
     echo "  installed: ~/.local/bin/$f"
@@ -58,13 +58,17 @@ fi
 echo ""
 echo "── Systemd service ────────────────────────────"
 cp "$REPO/auto-theme-startup.service" "$SYSTEMD/auto-theme-startup.service"
+cp "$REPO/auto-update.service"        "$SYSTEMD/auto-update.service"
 if command -v systemctl >/dev/null 2>&1 && systemctl --user show-environment >/dev/null 2>&1; then
     systemctl --user daemon-reload
     systemctl --user enable --now auto-theme-startup.service 2>/dev/null \
         && echo "  enabled: auto-theme-startup.service" \
         || echo "  warning: could not enable (run: systemctl --user enable --now auto-theme-startup.service)"
+    systemctl --user enable auto-update.service 2>/dev/null \
+        && echo "  enabled: auto-update.service" \
+        || echo "  warning: could not enable auto-update.service"
 else
-    echo "  installed: auto-theme-startup.service (enable manually after login)"
+    echo "  installed: auto-theme-startup.service, auto-update.service (enable manually after login)"
 fi
 
 echo ""

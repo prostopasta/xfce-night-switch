@@ -73,6 +73,13 @@ S_THEMES_GTK_NIGHT="GTK theme (night)"
 S_THEMES_TERM_NIGHT="Terminal profile (night)"
 S_THEMES_GET_MORE="More GTK themes: xfce-look.org / gnome-look.org  •  install to /usr/share/themes/ or ~/.themes/"
 
+S_UPDATE_TITLE="xfce-night-switch update"
+S_UPDATE_TEXT="New version <b>v%s</b> available (current: v%s).\n\nInstall now?"
+S_UPDATE_BTN_INSTALL="Install"
+S_UPDATE_BTN_LATER="Later"
+S_UPDATE_DONE="Updated to v%s successfully.\nRestart your session to apply changes."
+S_UPDATE_ERR="Update failed. Install manually:\n  sudo dpkg -i /tmp/xfce-night-switch.deb"
+
 S_PANEL="🖥️  Panel launcher"
 S_PANEL_TITLE="Panel Launcher"
 S_PANEL_CHOOSE="Select which panel to install the launcher on:"
