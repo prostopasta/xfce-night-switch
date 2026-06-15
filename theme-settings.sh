@@ -43,7 +43,7 @@ _load_strings() {
         S_COL_SETTING="Настройка"; S_COL_VALUE="Значение"
         S_NIGHT_ICON="🌙  Иконка ночи"
         S_DAY_ICON="☀️  Иконка дня"
-        S_AUTO="⏱  Авто-переключатель"
+        S_AUTO="⏱️  Авто-переключатель"
         S_LANG="🌐  Язык приложения"
         S_LANG_VALUE="Русский"
         S_AUTO_ON_TIME="✓ По времени"
@@ -90,7 +90,7 @@ _load_strings() {
         S_COL_SETTING="Setting"; S_COL_VALUE="Value"
         S_NIGHT_ICON="🌙  Night icon"
         S_DAY_ICON="☀️  Day icon"
-        S_AUTO="⏱  Auto-switcher"
+        S_AUTO="⏱️  Auto-switcher"
         S_LANG="🌐  App language"
         S_LANG_VALUE="English"
         S_AUTO_ON_TIME="✓ By time"
@@ -781,7 +781,7 @@ show_main_dialog() {
         "$S_NIGHT_ICON"    "$(icon_label "$ICON_NIGHT")"                          "night" \
         "$S_DAY_ICON"      "$(icon_label "$ICON_DAY")"                            "day" \
         "${S_THEMES:-🎨  Themes}"  "${LIGHT_THEME:-?} / ${DARK_THEME:-?}"        "themes" \
-        "${S_PANEL:-🖥  Panel launcher}"  "${XFCE_LAUNCHER_PANELS:-?} (plugin-${XFCE_PLUGIN_ID:-?})"  "panel" \
+        "${S_PANEL:-🖥️  Panel launcher}"  "${XFCE_LAUNCHER_PANELS:-?} (plugin-${XFCE_PLUGIN_ID:-?})"  "panel" \
         "$S_AUTO"          "$auto_label"                                          "auto" \
         "$S_LANG"          "$S_LANG_VALUE"                                        "lang" \
         "${S_RESTART:-🔄  Restart panel}"  ""                                     "restart" \
