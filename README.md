@@ -82,14 +82,14 @@ bash install.sh
                       ┌─────────────────────────────────────────┐
                       │         XFCE Panel (dynamic ID)         │
                       │  ┌──────────┐  ┌──────────────────────┐ │
-                      │  │  ☀/🌙   │  │  ⚙ Theme Settings   │ │
+                      │  │  ☀️/🌙  │  │  ⚙️ Theme Settings   │ │
                       │  │ (toggle) │  │  (arrow menu item)   │ │
                       │  └────┬─────┘  └──────────┬───────────┘ │
-                      └───────┼────────────────────┼─────────────┘
-                              │                    │
-              toggle-theme.sh │          theme-settings.sh
-                              │                    │
-            ┌─────────────────▼────────────────────▼──────────────┐
+                      └───────┼───────────────────┼─────────────┘
+                              │                   │
+              toggle-theme.sh │ theme-settings.sh │
+                              │                   │
+            ┌─────────────────▼───────────────────▼────────────────┐
             │                  GTK Theme switch                    │
             │   xfconf-query + gsettings + xfwm4 theme             │
             └──────────┬───────────────────────────────────────────┘
@@ -99,7 +99,7 @@ bash install.sh
          ▼             ▼                                ▼
   Terminator     Panel icon update              auto-theme.sh
   profile switch  (launcher-N/*.desktop)        (cron, every min)
-  (DBus)          day ☀ / night 🌙              time or location mode
+  (DBus)          day ☀️ / night 🌙            time or location mode
                                                 (NOAA sunrise/sunset)
 ```
 
@@ -121,7 +121,7 @@ The panel icon updates on every toggle and every cron run (every minute). If you
 │  Theme Switcher Settings                       │
 ├──────────────────────┬─────────────────────────┤
 │  🌙 Night icon       │  Tango • weather..      │
-│  ☀️ Day icon        │  Humanity • clear       │
+│  ☀️ Day icon         │  Humanity • clear       │
 │  🎨 Themes           │  [opens theme dialog]   │
 │  🖥️ Panel launcher   │  panel-0 (plugin-100)   │
 │  ⏱️ Auto-switcher    │  ✓ By location          │
