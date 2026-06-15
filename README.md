@@ -52,11 +52,10 @@
 ### Option A — .deb package (Ubuntu / Debian / Mint, recommended)
 
 ```bash
-# Download latest release
-wget https://github.com/prostopasta/xfce-night-switch/releases/latest/download/xfce-night-switch_latest_all.deb
-
-# Install (runs setup automatically)
-sudo dpkg -i xfce-night-switch_*_all.deb
+# Download and install latest release (one line)
+wget -qO- https://api.github.com/repos/prostopasta/xfce-night-switch/releases/latest \
+  | grep browser_download_url | grep '\.deb' | cut -d'"' -f4 \
+  | xargs wget -O xfce-night-switch.deb && sudo dpkg -i xfce-night-switch.deb
 ```
 
 `dpkg` runs `xfce-night-switch-setup` automatically for `$SUDO_USER`. The panel launcher is added, cron is configured, systemd service is enabled — no manual steps needed.
