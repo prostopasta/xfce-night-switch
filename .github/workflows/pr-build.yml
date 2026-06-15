@@ -61,12 +61,18 @@ jobs:
 
       - name: Generate test plan (Claude AI)
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_KEY:  ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
+          ANTHROPIC_MODEL:    ${{ secrets.ANTHROPIC_MODEL }}
         run: |
           COMMITS=$(git log "origin/main..HEAD" --oneline 2>/dev/null | head -20)
           CHANGED=$(git diff "origin/main...HEAD" --stat 2>/dev/null | tail -10)
           DIFF=$(git diff "origin/main...HEAD" -- scripts/ packaging/ systemd/ \
                  2>/dev/null | head -300)
+
+          # Defaults — override via repo secrets for custom endpoints/models
+          API_URL="${ANTHROPIC_BASE_URL:-https://api.anthropic.com}/v1/messages"
+          MODEL="${ANTHROPIC_MODEL:-claude-haiku-4-5-20251001}"
 
           AI_CHECKLIST=""
           if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
@@ -84,12 +90,12 @@ ${CHANGED}
 Diff (truncated):
 ${DIFF}"
 
-            RESPONSE=$(curl -sf https://api.anthropic.com/v1/messages \
+            RESPONSE=$(curl -sf "$API_URL" \
               -H "anthropic-version: 2023-06-01" \
               -H "x-api-key: ${ANTHROPIC_API_KEY}" \
               -H "content-type: application/json" \
-              -d "$(jq -n --arg p "$PROMPT" \
-                '{model:"claude-haiku-4-5-20251001",max_tokens:400,messages:[{role:"user",content:$p}]}')" \
+              -d "$(jq -n --arg p "$PROMPT" --arg m "$MODEL" \
+                '{model:$m,max_tokens:400,messages:[{role:"user",content:$p}]}')" \
               2>/dev/null || true)
 
             AI_CHECKLIST=$(echo "$RESPONSE" | jq -r '.content[0].text' 2>/dev/null || true)
