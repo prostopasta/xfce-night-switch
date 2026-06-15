@@ -24,19 +24,23 @@
     <line x1="802" y1="78" x2="797" y2="83"/>
   </g>
 
-  <!-- Title -->
+  <!-- Title — dark stroke for contrast when near icons -->
   <text x="440" y="52" font-family="'SF Mono', 'Fira Code', monospace" font-size="28"
-        font-weight="600" fill="#f8dcc0" text-anchor="middle" letter-spacing="1">
-    xfce4-theme-switcher
+        font-weight="600" text-anchor="middle" letter-spacing="1"
+        stroke="#1a1835" stroke-width="5" stroke-linejoin="round" paint-order="stroke"
+        fill="#f8dcc0">
+    xfce-night-switch
   </text>
 
-  <!-- Subtitle -->
+  <!-- Subtitle — shortened so it stays clear of moon (x≈80) and sun (x≈788) -->
   <text x="440" y="82" font-family="'SF Mono', 'Fira Code', monospace" font-size="14"
-        fill="#b0a8c8" text-anchor="middle" letter-spacing="0.5">
-    Day ↔ Night GTK theme switcher with panel launcher, icon picker &amp; location scheduling
+        text-anchor="middle" letter-spacing="0.5"
+        stroke="#1a1835" stroke-width="4" stroke-linejoin="round" paint-order="stroke"
+        fill="#b0a8c8">
+    Day ↔ Night GTK themes · panel launcher · location scheduling
   </text>
 
-  <!-- Arrow divider -->
+  <!-- Tech stack -->
   <text x="440" y="108" font-family="monospace" font-size="11"
         fill="#5a5270" text-anchor="middle">
     bash · yad · XFCE panel · gsettings · NOAA · OpenStreetMap · i18n
