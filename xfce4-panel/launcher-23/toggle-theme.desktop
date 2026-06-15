@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=Toggle Theme
-Comment=Переключить между дневной и ночной темой
-Exec=/home/ps/.local/bin/toggle-theme.sh
-Icon=weather-clear
-Terminal=false
-Type=Application
-Categories=Settings;DesktopSettings;
-Keywords=theme;dark;light;night;day;

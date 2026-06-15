@@ -1,43 +1,78 @@
 <p align="center">
-  <img src="docs/banner.svg" alt="xfce4-theme-switcher" width="880"/>
+  <img src="docs/banner.svg" alt="xfce-night-switch" width="880"/>
 </p>
 
 <p align="center">
+  <a href="https://github.com/prostopasta/xfce-night-switch/releases/latest">
+    <img src="https://img.shields.io/github/v/release/prostopasta/xfce-night-switch?label=latest&color=4cadcc" alt="Latest release"/>
+  </a>
+  <a href="https://github.com/prostopasta/xfce-night-switch/releases/latest">
+    <img src="https://img.shields.io/github/downloads/prostopasta/xfce-night-switch/total?color=brightgreen" alt="Downloads"/>
+  </a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"/></a>
   <img src="https://img.shields.io/badge/XFCE-4.16%2B-4cadcc.svg" alt="XFCE 4.16+"/>
   <img src="https://img.shields.io/badge/bash-5.0%2B-4EAA25.svg" alt="Bash 5+"/>
-  <img src="https://img.shields.io/badge/no%20python%20deps-✓-brightgreen.svg" alt="No Python deps"/>
   <img src="https://img.shields.io/badge/i18n-en%20%7C%20ru%20%7C%20custom-orange.svg" alt="i18n"/>
 </p>
 
 ---
 
-**xfce4-theme-switcher** is a day/night GTK theme switcher for XFCE with a panel launcher, graphical icon picker, location-aware scheduling, and full i18n.
+**xfce-night-switch** is a day/night GTK theme switcher for XFCE with a panel launcher, graphical settings dialog, Terminator terminal profile sync, location-aware scheduling, and full i18n.
 
-**The problem:** XFCE has no built-in dark mode schedule. Existing solutions are either genmon plugins requiring manual polling, Python packages with heavy dependencies, or simple scripts with no GUI.
+**The problem:** XFCE has no built-in dark mode schedule. Terminator has no way to auto-switch terminal profiles when the system switches between dark and light modes. Existing solutions are either genmon plugins requiring manual polling, Python packages with heavy dependencies, or simple scripts with no GUI.
 
-**The solution:** A self-contained bash toolset — a panel launcher with an arrow menu, a graphical settings dialog (yad), reactive icon sync via `gsettings monitor`, and sunrise/sunset scheduling with zero runtime dependencies beyond what ships with a standard XFCE desktop.
+**The solution:** A self-contained bash toolset — a panel launcher with an arrow menu, a graphical settings dialog (yad) for theme and icon selection, and sunrise/sunset scheduling with zero runtime dependencies beyond what ships with a standard XFCE desktop.
 
 ---
 
 ## Features
 
-| Feature | xfce4-theme-switcher | [xfce4-night-mode](https://github.com/bimlas/xfce4-night-mode) | [AutomaThemely](https://github.com/C2N14/AutomaThemely) | [xfce4-theme-switcher](https://github.com/UdeshyaDhungana/xfce4-theme-switcher) |
+| Feature | xfce-night-switch | [xfce4-night-mode](https://github.com/bimlas/xfce4-night-mode) | [AutomaThemely](https://github.com/C2N14/AutomaThemely) | [xfce4-theme-switcher](https://github.com/UdeshyaDhungana/xfce4-theme-switcher) |
 |---|:---:|:---:|:---:|:---:|
 | Panel launcher with icon | ✅ | GenMon text | ❌ | ❌ |
 | Live icon changes day↔night | ✅ | ❌ | ❌ | ❌ |
 | Graphical icon picker (96+ icons) | ✅ | ❌ | ❌ | ❌ |
+| GTK theme selector (scans system) | ✅ | ❌ | ❌ | ❌ |
+| Terminator profile sync | ✅ | ❌ | ❌ | ❌ |
 | Icons scaled to panel size | ✅ | ❌ | ❌ | ❌ |
 | Time-based schedule | ✅ | ✅ | ✅ | ❌ |
 | Sunrise/sunset by location | ✅ | ✅ | ✅ | ❌ |
 | City search (OpenStreetMap) | ✅ | ❌ | ❌ | ❌ |
-| Terminator terminal theme sync | ✅ | ❌ | ❌ | ❌ |
-| Reactive sync (gsettings monitor) | ✅ | ❌ | ❌ | ❌ |
 | GUI settings dialog | ✅ | ❌ | ✅ | ❌ |
+| Panel selection (multi-panel) | ✅ | ❌ | ❌ | ❌ |
 | Multi-language UI | ✅ en/ru/custom | ❌ | ❌ | ❌ |
-| Custom locale files | ✅ | ❌ | ❌ | ❌ |
 | No Python/pip dependencies | ✅ | ✅ | ❌ | ✅ |
+| .deb package | ✅ | ❌ | ❌ | ❌ |
 | One-command install | ✅ | ✅ | ✅ | ❌ |
+
+---
+
+## Quick install
+
+### Option A — .deb package (Ubuntu / Debian / Mint, recommended)
+
+```bash
+# Download and install latest release (one line)
+wget -qO- https://api.github.com/repos/prostopasta/xfce-night-switch/releases/latest \
+  | grep browser_download_url | grep '\.deb' | cut -d'"' -f4 \
+  | xargs wget -O xfce-night-switch.deb && sudo dpkg -i xfce-night-switch.deb
+```
+
+`dpkg` runs `xfce-night-switch-setup` automatically for `$SUDO_USER`. The panel launcher is added, cron is configured, systemd service is enabled — no manual steps needed.
+
+To remove:
+```bash
+sudo dpkg -r xfce-night-switch      # remove (keeps config)
+sudo dpkg -P xfce-night-switch      # purge (removes config too)
+```
+
+### Option B — git clone (any distro)
+
+```bash
+git clone https://github.com/prostopasta/xfce-night-switch.git
+cd xfce-night-switch
+bash install.sh
+```
 
 ---
 
@@ -45,7 +80,7 @@
 
 ```
                       ┌─────────────────────────────────────────┐
-                      │         XFCE Panel (plugin-101)         │
+                      │         XFCE Panel (dynamic ID)         │
                       │  ┌──────────┐  ┌──────────────────────┐ │
                       │  │  ☀/🌙   │  │  ⚙ Theme Settings   │ │
                       │  │ (toggle) │  │  (arrow menu item)   │ │
@@ -57,47 +92,64 @@
             ┌─────────────────▼────────────────────▼──────────────┐
             │                  GTK Theme switch                    │
             │   xfconf-query + gsettings + xfwm4 theme             │
-            └──────────┬──────────────────────────────────────────┘
+            └──────────┬───────────────────────────────────────────┘
                        │
-         ┌─────────────┼────────────────────┐
-         │             │                    │
-         ▼             ▼                    ▼
-  Terminator    theme-icon-sync.sh    auto-theme.sh
-  config copy   (gsettings monitor)   (cron, every min)
-  (inotify)     updates panel icon    time or location mode
-                  day ☀ / night 🌙       (NOAA sunrise/sunset)
+         ┌─────────────┼────────────────────────────────┐
+         │             │                                │
+         ▼             ▼                                ▼
+  Terminator     Panel icon update              auto-theme.sh
+  profile switch  (launcher-N/*.desktop)        (cron, every min)
+  (DBus)          day ☀ / night 🌙              time or location mode
+                                                (NOAA sunrise/sunset)
 ```
 
 ### Panel launcher
 
-The launcher lives at `~/.config/xfce4/panel/launcher-101/` and contains two entries:
+The launcher is installed at `~/.config/xfce4/panel/launcher-N/` where `N` is a free plugin ID ≥ 100, detected automatically and saved to `~/.config/theme-switcher/config`. Two entries:
+
 - **Left item** — toggle between day/night theme instantly
 - **Arrow** — opens settings dialog
 
-The panel icon updates reactively via `gsettings monitor org.gnome.desktop.interface` — any theme change from any source (cron, manual, XFCE settings) is detected and the icon switches between ☀ and 🌙.
+The panel icon updates on every toggle and every cron run (every minute). If you have multiple panels, the installer detects the one with the clock and places the launcher there. You can move it via **Settings → Panel launcher**.
 
 ### Settings dialog
 
-`theme-settings.sh` is a `yad`-based GUI with four sections:
+`theme-settings.sh` is a `yad`-based GUI with these sections:
 
 ```
-┌─────────────────────────────────────────────┐
-│  Theme Switcher Settings                    │
-├──────────────────────┬──────────────────────┤
-│  🌙 Night icon       │  Tango • weather..   │
-│  ☀️  Day icon        │  Humanity • clear    │
-│  ⏱ Auto-switcher    │  ✓ By location       │
-│  🌐 App language     │  English             │
-│  🔄 Restart panel    │                      │
-│  🔧 Install to panel │                      │
-└──────────────────────┴──────────────────────┘
+┌────────────────────────────────────────────────┐
+│  Theme Switcher Settings                       │
+├──────────────────────┬─────────────────────────┤
+│  🌙 Night icon       │  Tango • weather..      │
+│  ☀️  Day icon        │  Humanity • clear       │
+│  🎨 Themes           │  [opens theme dialog]   │
+│  🖥 Panel launcher   │  panel-0 (plugin-100)   │
+│  ⏱ Auto-switcher    │  ✓ By location          │
+│  🌐 App language     │  English                │
+│  🔄 Restart panel    │                         │
+└──────────────────────┴─────────────────────────┘
 ```
 
-**Icon picker** scans all installed icon themes, deduplicates by `(theme, filename)`, renders every icon to panel pixel size via inkscape 2× supersampling, and caches in `~/.cache/theme-switcher/icons/`.
+**Theme dialog** (`🎨 Themes`) scans `/usr/share/themes/` and `~/.themes/` for installed GTK themes. Pick separate themes for day and night mode. Same for Terminator profiles — reads `~/.config/terminator/config` and lists available profiles.
 
-**Auto-switcher** supports two modes:
-- **By time** — configurable `DAY_START` / `DAY_END` (e.g. `07:00–18:00`)
-- **By location** — NOAA solar algorithm (pure Python stdlib, no third-party packages), city search via Nominatim/OpenStreetMap, IP auto-detection
+---
+
+## Terminator profile sync
+
+XFCE has no built-in way to switch Terminator terminal profiles when the system dark/light mode changes. This is a common pain point — Terminator's profiles are static and there is no hook for system theme changes.
+
+**xfce-night-switch solves this** by:
+
+1. Switching the active profile for all open Terminator windows via DBus on every toggle or schedule event
+2. Updating the `profile =` setting in layout blocks of `~/.config/terminator/config` so new terminal windows open with the correct profile
+
+**Setup:**
+
+1. Create two profiles in Terminator: **Preferences → Profiles** (e.g. `light-theme` and `dark-theme`)
+2. Open **theme-settings → 🎨 Themes** — pick the profiles in the day/night dropdowns
+3. Done — Terminator will switch automatically
+
+**If you don't use Terminator**, set both profiles to `default` — no effect.
 
 ---
 
@@ -112,29 +164,10 @@ The panel icon updates reactively via `gsettings monitor org.gnome.desktop.inter
 | `inkscape` | SVG icon rendering | Often yes |
 | `imagemagick` (`convert`) | PNG scaling fallback | Usually yes |
 | `curl` | City search, IP geolocation | ✅ |
-| `python3` | NOAA sunrise/sunset, URL encoding | ✅ |
-| `inotifywait` (inotify-tools) | File watching | May need: `apt install inotify-tools` |
+| `python3` | NOAA sunrise/sunset | ✅ |
+| `python3-dbus` | Terminator profile switching | `apt install python3-dbus` |
 
 No `pip install`, no virtualenvs, no Node.js.
-
----
-
-## Quick install
-
-```bash
-git clone https://github.com/prostopasta/xfce4-theme-switcher.git
-cd xfce4-theme-switcher
-bash install.sh
-```
-
-The installer:
-1. Copies scripts to `~/.local/bin/`
-2. Installs `.desktop` entries and the moon SVG icon
-3. Creates `~/.config/theme-switcher/config` (preserves existing)
-4. Deploys `en` and `ru` locale files (preserves custom locales)
-5. Enables `theme-icon-sync.service` (systemd --user)
-6. Adds cron job for `auto-theme.sh` (every minute)
-7. Registers panel launcher as `plugin-101` via xfconf (if XFCE session is active)
 
 ---
 
@@ -143,46 +176,39 @@ The installer:
 Config lives at `~/.config/theme-switcher/config`:
 
 ```bash
-ICON_DAY="weather-clear"                                  # icon name or full path
-ICON_NIGHT="/usr/share/icons/Tango/scalable/status/weather-clear-night.svg"
-AUTO_SWITCHER="enabled"                                   # enabled | disabled
-AUTO_MODE="location"                                      # time | location
-DAY_START="07:00"                                         # used in time mode
+# GTK themes — use 'theme-settings' GUI to pick from installed themes
+LIGHT_THEME="Adwaita"
+DARK_THEME="Adwaita-dark"
+
+# Terminator profiles (must match [[ProfileName]] in ~/.config/terminator/config)
+TERM_PROFILE_LIGHT="default"
+TERM_PROFILE_DARK="default"
+
+# Icons
+ICON_DAY="weather-clear"
+ICON_NIGHT="$HOME/.local/share/icons/hicolor/scalable/apps/theme-moon.svg"
+
+# Scheduling
+AUTO_SWITCHER="enabled"          # enabled | disabled
+AUTO_MODE="time"                 # time | location
+DAY_START="07:00"
 DAY_END="18:00"
-LATITUDE="25.317"                                         # used in location mode
-LONGITUDE="55.440"
-APP_LANG="en"                                             # en | ru | custom code
+LATITUDE=""                      # used in location mode
+LONGITUDE=""
+APP_LANG="en"                    # en | ru | custom code
 ```
 
-Edit via `theme-settings.sh` or directly.
-
----
-
-## Themes used (defaults)
-
-The switcher controls GTK / WM themes via xfconf and gsettings. Default pair:
-
-| Mode | GTK theme | Terminator profile |
-|---|---|---|
-| Day | `ZorinBlue-Light` | `AdventureTime` colors |
-| Night | `Mint-Y-Dark-Aqua` | `dark-Blitz` colors |
-
-Change in `auto-theme.sh` variables `LIGHT_THEME` / `DARK_THEME`.
+Edit via `theme-settings` GUI or directly. The file is never overwritten on reinstall.
 
 ---
 
 ## Adding a custom language
 
 ```bash
-# Create locale from English template
 cp ~/.config/theme-switcher/locales/en.sh ~/.config/theme-switcher/locales/de.sh
-# Edit and translate all S_* values
 nano ~/.config/theme-switcher/locales/de.sh
-# Select in settings
-theme-settings.sh → App language → de
+# Select in settings: App language → de
 ```
-
-Or use the built-in button: **App language → ➕ Add language** — it opens the template in your default text editor.
 
 ---
 
@@ -199,7 +225,7 @@ Or use the built-in button: **App language → ➕ Add language** — it opens t
 | [bimlas/xfce4-night-mode](https://github.com/bimlas/xfce4-night-mode) | 109⭐ | GenMon plugin, shell | Text only | ❌ | ✅ |
 | [C2N14/AutomaThemely](https://github.com/C2N14/AutomaThemely) | 202⭐ | Python, multi-DE | ❌ | ✅ | ✅ |
 | [UdeshyaDhungana/xfce4-theme-switcher](https://github.com/UdeshyaDhungana/xfce4-theme-switcher) | 10⭐ | Shell | ❌ | ❌ | ❌ |
-| **xfce4-theme-switcher** (this) | — | Shell + yad | ✅ icon+menu | ✅ | ✅ |
+| **xfce-night-switch** (this) | — | Shell + yad | ✅ icon+menu | ✅ | ✅ |
 
 ---
 

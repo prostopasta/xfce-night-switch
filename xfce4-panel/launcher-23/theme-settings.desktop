@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=Theme Settings
-Comment=Настройки переключателя тем (иконки, авто-режим)
-Exec=/home/ps/.local/bin/theme-settings.sh
-Icon=preferences-desktop-theme
-Terminal=false
-Type=Application
-Categories=Settings;DesktopSettings;

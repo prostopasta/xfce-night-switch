@@ -1,0 +1,191 @@
+name: Release
+
+# Triggers:
+#   1. Push to main — auto-detects bump from conventional commits, creates tag + release
+#   2. Tag push (v*.*.*) — manual release from a pushed tag (e.g. hotfix)
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v[0-9]*.[0-9]*.[0-9]*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ── Step 1: Determine version ───────────────────────────────────────────
+      - name: Determine version
+        id: version
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          if [[ "$REF_TYPE" == "tag" ]]; then
+            VERSION="${REF_NAME#v}"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            echo "new_tag=$REF_NAME" >> "$GITHUB_OUTPUT"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "Source: manual tag $REF_NAME"
+            exit 0
+          fi
+
+          LATEST=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+          [[ -z "$LATEST" ]] && LATEST="v0.0.0"
+          echo "Latest tag: $LATEST"
+
+          COMMITS=$(git log "${LATEST}..HEAD" --format="%s%n%b" 2>/dev/null || true)
+          if [[ -z "$COMMITS" ]]; then
+            echo "No new commits — skipping release."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BUMP="none"
+          if echo "$COMMITS" | grep -qiE "^BREAKING CHANGE"; then
+            BUMP="major"
+          elif echo "$COMMITS" | grep -qE "^feat(\(.+\))?!?:"; then
+            BUMP="minor"
+          elif echo "$COMMITS" | grep -qE "^fix(\(.+\))?!?:"; then
+            BUMP="patch"
+          fi
+
+          echo "Bump type: $BUMP"
+          if [[ "$BUMP" == "none" ]]; then
+            echo "No releasable commits (no fix/feat) — skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          VER="${LATEST#v}"
+          MAJOR=$(echo "$VER" | cut -d. -f1)
+          MINOR=$(echo "$VER" | cut -d. -f2)
+          PATCH=$(echo "$VER" | cut -d. -f3)
+          case "$BUMP" in
+            major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR+1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH+1)) ;;
+          esac
+
+          NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "New version: $NEW_TAG"
+          echo "version=$VERSION"   >> "$GITHUB_OUTPUT"
+          echo "new_tag=$NEW_TAG"   >> "$GITHUB_OUTPUT"
+          echo "skip=false"         >> "$GITHUB_OUTPUT"
+
+      # ── Step 2: Tag commit (branch push only) ──────────────────────────────
+      - name: Create and push tag
+        if: steps.version.outputs.skip == 'false' && github.ref_type == 'branch'
+        env:
+          NEW_TAG: ${{ steps.version.outputs.new_tag }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$NEW_TAG"
+          git push origin "$NEW_TAG"
+
+      # ── Step 3: Build .deb package ──────────────────────────────────────────
+      - name: Build .deb package
+        if: steps.version.outputs.skip == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          PKG="xfce-night-switch_${VERSION}_all"
+          SHARE="$PKG/usr/share/xfce-night-switch"
+          APPS="$PKG/usr/share/applications"
+          ICONS="$PKG/usr/share/icons/hicolor/scalable/apps"
+          SYSTEMD="$PKG/usr/lib/systemd/user"
+
+          mkdir -p "$SHARE/locales" "$APPS" "$ICONS" "$SYSTEMD" \
+                   "$PKG/usr/bin" "$PKG/DEBIAN"
+
+          # ── Scripts ─────────────────────────────────────────────────────────
+          install -m755 auto-theme.sh             "$SHARE/auto-theme.sh"
+          install -m755 toggle-theme.sh           "$SHARE/toggle-theme.sh"
+          install -m755 theme-settings.sh         "$SHARE/theme-settings.sh"
+          install -m755 install-panel-launcher.sh "$SHARE/install-panel-launcher.sh"
+          install -m755 sunrise-sunset.py         "$SHARE/sunrise-sunset.py"
+          install -m644 packaging/config.default  "$SHARE/config.default"
+          install -m644 locales/en.sh             "$SHARE/locales/en.sh"
+          install -m644 locales/ru.sh             "$SHARE/locales/ru.sh"
+
+          # ── Wrappers in /usr/bin/ ────────────────────────────────────────────
+          for w in auto-theme theme-settings toggle-theme xfce-night-switch-setup; do
+            install -m755 "packaging/bin/$w" "$PKG/usr/bin/$w"
+          done
+
+          # ── Desktop files ────────────────────────────────────────────────────
+          install -m644 toggle-theme.desktop   "$APPS/toggle-theme.desktop"
+          install -m644 theme-settings.desktop "$APPS/theme-settings.desktop"
+
+          # ── Icon ─────────────────────────────────────────────────────────────
+          install -m644 icons/theme-moon.svg "$ICONS/theme-moon.svg"
+
+          # ── Systemd unit ─────────────────────────────────────────────────────
+          install -m644 auto-theme-startup.service "$SYSTEMD/auto-theme-startup.service"
+
+          # ── DEBIAN/ ──────────────────────────────────────────────────────────
+          sed "s/__VERSION__/$VERSION/" packaging/DEBIAN/control.template > "$PKG/DEBIAN/control"
+          install -m755 packaging/DEBIAN/postinst "$PKG/DEBIAN/postinst"
+          install -m755 packaging/DEBIAN/postrm   "$PKG/DEBIAN/postrm"
+          install -m755 packaging/DEBIAN/prerm    "$PKG/DEBIAN/prerm"
+
+          # ── Build ─────────────────────────────────────────────────────────────
+          dpkg-deb --build --root-owner-group "$PKG"
+          echo "Built: ${PKG}.deb"
+
+      # ── Step 4: Generate release notes ─────────────────────────────────────
+      - name: Generate release notes
+        if: steps.version.outputs.skip == 'false'
+        id: notes
+        env:
+          NEW_TAG: ${{ steps.version.outputs.new_tag }}
+        run: |
+          PREV=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -n '2p')
+          [[ -z "$PREV" ]] && RANGE="HEAD" || RANGE="${PREV}..HEAD"
+
+          feats=$(git log "$RANGE" --format="%s" | grep -E "^feat(\(.+\))?!?:" | sed 's/^feat[^:]*: //')
+          fixes=$(git log "$RANGE" --format="%s" | grep -E "^fix(\(.+\))?!?:" | sed 's/^fix[^:]*: //')
+
+          body=""
+          if [[ -n "$feats" ]]; then
+            body+="### What's new\n"
+            while IFS= read -r line; do body+="- ${line}\n"; done <<< "$feats"
+            body+="\n"
+          fi
+          if [[ -n "$fixes" ]]; then
+            body+="### Bug fixes\n"
+            while IFS= read -r line; do body+="- ${line}\n"; done <<< "$fixes"
+            body+="\n"
+          fi
+          if [[ -n "$PREV" ]]; then
+            body+="**Full changelog:** https://github.com/prostopasta/xfce-night-switch/compare/${PREV}...${NEW_TAG}"
+          fi
+
+          {
+            echo "body<<RELEASE_NOTES_EOF"
+            echo -e "$body"
+            echo "RELEASE_NOTES_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      # ── Step 5: Publish release ─────────────────────────────────────────────
+      - name: Publish release
+        if: steps.version.outputs.skip == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.new_tag }}
+          name: "xfce-night-switch ${{ steps.version.outputs.new_tag }}"
+          body: ${{ steps.notes.outputs.body }}
+          files: |
+            xfce-night-switch_${{ steps.version.outputs.version }}_all.deb

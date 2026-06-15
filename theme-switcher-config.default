@@ -1,9 +1,26 @@
-ICON_DAY="/usr/share/icons/Humanity-Dark/status/48/weather-clear.svg"
-ICON_NIGHT="/usr/share/icons/gnome/48x48/status/weather-few-clouds-night.png"
+# xfce-night-switch default configuration.
+# Copy this to ~/.config/theme-switcher/config and adjust to your system.
+# GTK themes are listed in: /usr/share/themes/ and ~/.themes/
+# Run 'theme-settings' to choose themes and icons via GUI.
+
+ICON_DAY="weather-clear"
+ICON_NIGHT="$HOME/.local/share/icons/hicolor/scalable/apps/theme-moon.svg"
+
 AUTO_SWITCHER="enabled"
-AUTO_MODE="location"
+AUTO_MODE="time"
 DAY_START="07:00"
 DAY_END="18:00"
-LATITUDE="25.31763"
-LONGITUDE="55.44057"
+LATITUDE=""
+LONGITUDE=""
+
+APP_LANG="en"
 NOMINATIM_LANG="en"
+
+# GTK theme names — use 'theme-settings' GUI to pick from installed themes.
+# Safe cross-distro defaults (always available with gtk3):
+LIGHT_THEME="Adwaita"
+DARK_THEME="Adwaita-dark"
+
+# Terminator profile names — must match [[ProfileName]] in ~/.config/terminator/config
+TERM_PROFILE_LIGHT="default"
+TERM_PROFILE_DARK="default"
