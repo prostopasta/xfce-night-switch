@@ -1,0 +1,111 @@
+#!/bin/bash
+# Per-user setup for xfce-night-switch.
+# Creates ~/.local/bin/ symlinks, initialises config and enables the systemd service.
+set -euo pipefail
+
+SHARE="/usr/share/xfce-night-switch"
+CONFIG_DIR="$HOME/.config/theme-switcher"
+BIN_DIR="$HOME/.local/bin"
+APP_DIR="$HOME/.local/share/applications"
+ICON_DIR="$HOME/.local/share/icons/hicolor/scalable/apps"
+
+echo "=== xfce-night-switch setup for $USER ==="
+echo ""
+
+# ── ~/.local/bin/ symlinks ─────────────────────────────────────────────────
+echo "Linking scripts to $BIN_DIR ..."
+mkdir -p "$BIN_DIR"
+for f in auto-theme.sh toggle-theme.sh theme-settings.sh \
+          sunrise-sunset.py install-panel-launcher.sh; do
+    ln -sf "$SHARE/$f" "$BIN_DIR/$f"
+    echo "  $BIN_DIR/$f"
+done
+
+# ── Config ─────────────────────────────────────────────────────────────────
+echo ""
+echo "Config ..."
+mkdir -p "$CONFIG_DIR/locales"
+if [ ! -f "$CONFIG_DIR/config" ]; then
+    cp "$SHARE/config.default" "$CONFIG_DIR/config"
+    echo "  created: $CONFIG_DIR/config"
+else
+    echo "  exists (not overwritten): $CONFIG_DIR/config"
+fi
+
+# Copy locale files without overwriting user edits
+for f in "$SHARE/locales/"*.sh; do
+    dst="$CONFIG_DIR/locales/$(basename "$f")"
+    if [ ! -f "$dst" ]; then
+        cp "$f" "$dst"
+        echo "  locale: $(basename "$f")"
+    fi
+done
+
+# ── Icon ───────────────────────────────────────────────────────────────────
+echo ""
+echo "Icon ..."
+mkdir -p "$ICON_DIR"
+cp /usr/share/icons/hicolor/scalable/apps/theme-moon.svg "$ICON_DIR/" 2>/dev/null \
+    && echo "  copied: theme-moon.svg" || echo "  skipped (not found)"
+gtk-update-icon-cache -f "$HOME/.local/share/icons/hicolor/" 2>/dev/null || true
+
+# ── Desktop files ──────────────────────────────────────────────────────────
+echo ""
+echo "Desktop files ..."
+mkdir -p "$APP_DIR"
+for name in toggle-theme theme-settings; do
+    src="/usr/share/applications/${name}.desktop"
+    dst="$APP_DIR/${name}.desktop"
+    # Replace the Exec= with $HOME-expanded path for ~/.local/bin
+    sed "s|Exec=.*${name}|Exec=${BIN_DIR}/${name}.sh|" "$src" > "$dst"
+    echo "  $dst"
+done
+
+# ── Panel launcher (plugin-101) ────────────────────────────────────────────
+echo ""
+echo "Panel launcher ..."
+if DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+   xfconf-query -c xfce4-panel -l >/dev/null 2>&1; then
+    if bash "$BIN_DIR/install-panel-launcher.sh" 2>&1; then
+        # Kill + restart panel so it reads our xfconf changes.
+        # --restart saves in-memory state first, overwriting xfconf — avoid it.
+        sleep 0.3
+        DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+        DISPLAY=:0 pkill -x xfce4-panel 2>/dev/null || true
+        sleep 0.4
+        DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+        DISPLAY=:0 xfce4-panel 2>/dev/null &
+        echo "  launcher: installed, panel reloading"
+    else
+        echo "  launcher: install failed — add manually: right-click panel → Add New Items → Launcher"
+    fi
+else
+    echo "  XFCE panel not accessible — run 'install-panel-launcher.sh' after login"
+fi
+
+# ── Systemd service ────────────────────────────────────────────────────────
+echo ""
+echo "Systemd service ..."
+if systemctl --user show-environment >/dev/null 2>&1; then
+    systemctl --user daemon-reload
+    systemctl --user enable --now auto-theme-startup.service 2>/dev/null \
+        && echo "  auto-theme-startup.service: enabled" \
+        || echo "  auto-theme-startup.service: could not enable — run: systemctl --user enable --now auto-theme-startup.service"
+else
+    echo "  systemd --user unavailable — run setup again from a graphical session"
+fi
+
+# ── Cron ───────────────────────────────────────────────────────────────────
+echo ""
+source "$CONFIG_DIR/config" 2>/dev/null || true
+if [ "${AUTO_SWITCHER:-enabled}" = "enabled" ]; then
+    if ! crontab -l 2>/dev/null | grep -q 'auto-theme.sh'; then
+        (crontab -l 2>/dev/null; echo "*/1 * * * * $BIN_DIR/auto-theme.sh") | crontab -
+        echo "Cron: auto-theme.sh added (every minute)"
+    else
+        echo "Cron: already present"
+    fi
+fi
+
+echo ""
+echo "Done. Run 'theme-settings' to configure themes and icons."

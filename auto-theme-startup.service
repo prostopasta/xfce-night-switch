@@ -1,0 +1,10 @@
+[Unit]
+Description=Apply day/night theme at session start
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/auto-theme
+
+[Install]
+WantedBy=default.target

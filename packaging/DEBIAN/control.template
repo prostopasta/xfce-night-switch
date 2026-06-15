@@ -1,0 +1,16 @@
+Package: xfce-night-switch
+Version: __VERSION__
+Architecture: all
+Maintainer: prostopasta <https://github.com/prostopasta/xfce-night-switch>
+Depends: bash (>= 4.0), python3 (>= 3.6), python3-dbus, yad, curl
+Recommends: inkscape | imagemagick
+Homepage: https://github.com/prostopasta/xfce-night-switch
+Description: Day/night GTK theme switcher for XFCE
+ Automatically switches GTK themes, Terminator terminal profiles and panel
+ icons based on time of day or geographic location (sunrise/sunset).
+ .
+ Detects installed GTK themes from /usr/share/themes and ~/.themes.
+ GUI settings dialog for theme selection, panel launcher management,
+ icon picker, and auto-scheduler configuration.
+ .
+ After installation, run as your user: xfce-night-switch-setup

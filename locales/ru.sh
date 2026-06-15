@@ -57,3 +57,23 @@ S_PANEL_HINT="Добавьте вручную: правой кнопкой на 
 S_RESTART="🔄  Перезапустить панель"
 S_RESTART_DONE="Панель перезапущена."
 S_INSTALL_PANEL="🔧  Установить на панель"
+
+S_TOOLTIP_DAY="Дневной режим (нажмите чтобы переключить на ночь)"
+S_TOOLTIP_NIGHT="Ночной режим (нажмите чтобы переключить на день)"
+
+S_THEMES="🎨  Темы"
+S_THEMES_TITLE="Выбор тем"
+S_THEMES_DAY_HDR="── День ────────────────────────────────"
+S_THEMES_NIGHT_HDR="── Ночь ────────────────────────────────"
+S_THEMES_GTK_DAY="GTK тема (день)"
+S_THEMES_TERM_DAY="Профиль терминала (день)"
+S_THEMES_GTK_NIGHT="GTK тема (ночь)"
+S_THEMES_TERM_NIGHT="Профиль терминала (ночь)"
+S_THEMES_GET_MORE="Больше GTK тем: xfce-look.org / gnome-look.org  •  устанавливать в /usr/share/themes/ или ~/.themes/"
+
+S_PANEL="🖥  Панель"
+S_PANEL_TITLE="Launcher на панель"
+S_PANEL_CHOOSE="Выберите панель для установки launcher:"
+S_PANEL_CLOCK="★ часы"
+S_PANEL_INSTALLED="✓ установлен здесь"
+S_PANEL_DONE="Launcher установлен на"
