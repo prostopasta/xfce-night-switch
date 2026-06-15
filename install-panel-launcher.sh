@@ -132,7 +132,6 @@ fi
 
 PLUGIN_ID=$(_get_plugin_id)
 LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-${PLUGIN_ID}"
-OLD_LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-23"
 
 echo "Primary panel : $TARGET_PANEL"
 echo "Plugin ID     : $PLUGIN_ID"
@@ -204,9 +203,7 @@ _update_panel() {
     while IFS= read -r id; do
         id=$(echo "$id" | tr -d ' \r')
         [[ "$id" =~ ^[0-9]+$ ]] || continue
-        if [ "$id" = "23" ]; then
-            ids+=(-t int -s "$PLUGIN_ID"); found=true
-        elif [ "$id" = "$PLUGIN_ID" ]; then
+        if [ "$id" = "$PLUGIN_ID" ]; then
             ids+=(-t int -s "$id"); found=true
         else
             ids+=(-t int -s "$id")
@@ -225,15 +222,6 @@ for old_panel in $OLD_PANELS; do
 done
 
 _update_panel "/panels/${TARGET_PANEL}"
-
-# ── Clean up legacy plugin-23 ───────────────────────────────────────────────
-if xfconf-query -c xfce4-panel -p /plugins/plugin-23 >/dev/null 2>&1; then
-    xfconf-query -c xfce4-panel -p /plugins/plugin-23 -r -R 2>/dev/null || true
-    echo "Removed legacy plugin-23 from xfconf"
-fi
-if [ -d "$OLD_LAUNCHER_DIR" ] && [ "$OLD_LAUNCHER_DIR" != "$LAUNCHER_DIR" ]; then
-    mv "$OLD_LAUNCHER_DIR" "${OLD_LAUNCHER_DIR}.bak" 2>/dev/null || true
-fi
 
 # ── Save install metadata to config ─────────────────────────────────────────
 _cfg_set() {
