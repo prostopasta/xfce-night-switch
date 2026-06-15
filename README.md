@@ -82,7 +82,7 @@ bash install.sh
                       ┌─────────────────────────────────────────┐
                       │         XFCE Panel (dynamic ID)         │
                       │  ┌──────────┐  ┌──────────────────────┐ │
-                      │  │  ☀/🌙   │  │  ⚙ Theme Settings   │ │
+                      │  │ sun/moon │  │   Theme Settings     │ │
                       │  │ (toggle) │  │  (arrow menu item)   │ │
                       │  └────┬─────┘  └──────────┬───────────┘ │
                       └───────┼────────────────────┼─────────────┘
@@ -99,7 +99,7 @@ bash install.sh
          ▼             ▼                                ▼
   Terminator     Panel icon update              auto-theme.sh
   profile switch  (launcher-N/*.desktop)        (cron, every min)
-  (DBus)          day ☀ / night 🌙              time or location mode
+  (DBus)          day / night icon              time or location mode
                                                 (NOAA sunrise/sunset)
 ```
 
@@ -120,13 +120,13 @@ The panel icon updates on every toggle and every cron run (every minute). If you
 ┌────────────────────────────────────────────────┐
 │  Theme Switcher Settings                       │
 ├──────────────────────┬─────────────────────────┤
-│  🌙 Night icon       │  Tango • weather..      │
-│  ☀️ Day icon        │  Humanity • clear       │
-│  🎨 Themes           │  [opens theme dialog]   │
-│  🖥️ Panel launcher   │  panel-0 (plugin-100)   │
-│  ⏱️ Auto-switcher    │  ✓ By location          │
-│  🌐 App language     │  English                │
-│  🔄 Restart panel    │                         │
+│  Night icon          │  Tango / weather..      │
+│  Day icon            │  Adwaita / clear        │
+│  Themes              │  [opens theme dialog]   │
+│  Panel launcher      │  panel-0 (plugin-100)   │
+│  Auto-switcher       │  By location            │
+│  App language        │  English                │
+│  Restart panel       │                         │
 └──────────────────────┴─────────────────────────┘
 ```
 

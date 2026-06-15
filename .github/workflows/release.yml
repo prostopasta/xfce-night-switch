@@ -1,12 +1,16 @@
 name: Release
 
 # Triggers:
-#   1. Push to main — auto-detects bump from conventional commits, creates tag + release
+#   1. Push to main with code changes — auto-detects bump from conventional commits
 #   2. Tag push (v*.*.*) — manual release from a pushed tag (e.g. hotfix)
+#   Doc-only changes (*.md, docs/) do not trigger a release.
 on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
     tags:
       - 'v[0-9]*.[0-9]*.[0-9]*'
 
