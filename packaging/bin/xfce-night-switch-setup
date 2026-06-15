@@ -109,3 +109,36 @@ fi
 
 echo ""
 echo "Done. Run 'theme-settings' to configure themes and icons."
+
+# ── PR test confirmation ───────────────────────────────────────────────────
+PR_NUM_FILE="$SHARE/PR_NUMBER"
+if [ -f "$PR_NUM_FILE" ]; then
+    PR_NUM=$(cat "$PR_NUM_FILE")
+    echo ""
+    echo "┌────────────────────────────────────────────────────────────┐"
+    echo "│  TEST BUILD — PR #${PR_NUM}                                │"
+    echo "│  Test: panel icon ✓  toggle works ✓  settings open ✓      │"
+    echo "└────────────────────────────────────────────────────────────┘"
+    if [ -t 0 ] && [ -t 1 ]; then
+        read -r -p "Everything works correctly? [y/N]: " yn
+        if [[ "${yn:-}" =~ ^[Yy]$ ]]; then
+            if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+                gh pr comment "$PR_NUM" \
+                    --repo prostopasta/xfce-night-switch \
+                    --body '/test-passed' \
+                    && echo "Confirmed! PR #${PR_NUM} test gate passed." \
+                    || echo "Could not post comment — confirm manually:"  \
+                    && echo "  https://github.com/prostopasta/xfce-night-switch/pull/${PR_NUM}"
+            else
+                echo "Post /test-passed on PR #${PR_NUM} to unblock merge:"
+                echo "  https://github.com/prostopasta/xfce-night-switch/pull/${PR_NUM}"
+            fi
+        else
+            echo "Please comment what failed on PR #${PR_NUM}:"
+            echo "  https://github.com/prostopasta/xfce-night-switch/pull/${PR_NUM}"
+        fi
+    else
+        echo "After testing, confirm by posting /test-passed on:"
+        echo "  https://github.com/prostopasta/xfce-night-switch/pull/${PR_NUM}"
+    fi
+fi
