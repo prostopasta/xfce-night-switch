@@ -133,12 +133,24 @@ fi
 PLUGIN_ID=$(_get_plugin_id)
 LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-${PLUGIN_ID}"
 
-# If the plugin slot is already registered as a launcher this is an upgrade —
-# the panel has it loaded already, no restart needed. Restart only on fresh install.
+# Decide whether to (re)start xfce4-panel:
+#   - fresh install (plugin not in xfconf) → full restart required to load plugin
+#   - upgrade + panel running              → skip, panel already has plugin loaded
+#   - upgrade + panel dead (killed by bug) → start without pkill (nothing to kill)
 _existing_type=$(xfconf-query -c xfce4-panel \
     -p "/plugins/plugin-${PLUGIN_ID}" 2>/dev/null || true)
+_panel_running=false
+pgrep -x xfce4-panel > /dev/null 2>&1 && _panel_running=true
 _NEED_PANEL_RESTART=true
-[ "$_existing_type" = "launcher" ] && _NEED_PANEL_RESTART=false
+_NEED_PANEL_START=false
+if [ "$_existing_type" = "launcher" ]; then
+    if $_panel_running; then
+        _NEED_PANEL_RESTART=false   # upgrade, panel alive — nothing to do
+    else
+        _NEED_PANEL_RESTART=false   # upgrade, panel dead — just start it
+        _NEED_PANEL_START=true
+    fi
+fi
 
 echo "Primary panel : $TARGET_PANEL"
 echo "Plugin ID     : $PLUGIN_ID"
@@ -247,12 +259,17 @@ fi
 
 echo "OK: plugin-${PLUGIN_ID} / launcher-${PLUGIN_ID} installed on ${TARGET_PANEL}"
 if $_NEED_PANEL_RESTART; then
-    # Kill panel → modify xfconf is already done → start fresh from xfconf.
-    # We intentionally avoid --restart because it saves in-memory state first,
-    # which would overwrite the xfconf changes we just made.
+    # Fresh install: kill panel and restart so it picks up the new plugin from xfconf.
+    # Avoid --restart: it saves in-memory state first, overwriting our xfconf changes.
     pkill -x xfce4-panel 2>/dev/null || true
     sleep 0.4
-    xfce4-panel 2>/dev/null &
+    DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+        DISPLAY=:0 xfce4-panel 2>/dev/null &
+elif $_NEED_PANEL_START; then
+    # Upgrade but panel was dead — start it without killing (nothing to kill).
+    echo "  panel was not running — starting xfce4-panel"
+    DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+        DISPLAY=:0 xfce4-panel 2>/dev/null &
 else
-    echo "  plugin already registered — panel restart skipped (upgrade)"
+    echo "  plugin already registered, panel running — restart skipped (upgrade)"
 fi

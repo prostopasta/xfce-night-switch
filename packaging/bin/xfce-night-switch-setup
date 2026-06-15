@@ -127,10 +127,10 @@ PR_NUM_FILE="$SHARE/PR_NUMBER"
 if [ -f "$PR_NUM_FILE" ]; then
     PR_NUM=$(cat "$PR_NUM_FILE")
     echo ""
-    echo "┌────────────────────────────────────────────────────────────┐"
-    echo "│  TEST BUILD — PR #${PR_NUM}                                │"
-    echo "│  Test: panel icon ✓  toggle works ✓  settings open ✓      │"
-    echo "└────────────────────────────────────────────────────────────┘"
+    printf "┌─────────────────────────────────────────────────────┐\n"
+    printf "│  🧪 TEST BUILD — PR #%-4s                           │\n" "$PR_NUM"
+    printf "│  Check: panel visible · toggle works · settings OK  │\n"
+    printf "└─────────────────────────────────────────────────────┘\n"
     if [ -t 0 ] && [ -t 1 ]; then
         read -r -p "Everything works correctly? [y/N]: " yn
         if [[ "${yn:-}" =~ ^[Yy]$ ]]; then
@@ -139,8 +139,8 @@ if [ -f "$PR_NUM_FILE" ]; then
                     --repo prostopasta/xfce-night-switch \
                     --body '/test-passed' \
                     && echo "Confirmed! PR #${PR_NUM} test gate passed." \
-                    || echo "Could not post comment — confirm manually:"  \
-                    && echo "  https://github.com/prostopasta/xfce-night-switch/pull/${PR_NUM}"
+                    || { echo "Could not post comment — confirm manually:"; \
+                         echo "  https://github.com/prostopasta/xfce-night-switch/pull/${PR_NUM}"; }
             else
                 echo "Post /test-passed on PR #${PR_NUM} to unblock merge:"
                 echo "  https://github.com/prostopasta/xfce-night-switch/pull/${PR_NUM}"
