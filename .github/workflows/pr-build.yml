@@ -3,7 +3,7 @@ name: PR Test Build
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, closed]
 
 permissions:
   contents: write
@@ -11,7 +11,26 @@ permissions:
   statuses: write
 
 jobs:
+  cleanup:
+    name: Clean up test releases on PR close
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Delete all test releases for this PR
+        run: |
+          PR="${{ github.event.pull_request.number }}"
+          gh release list --repo ${{ github.repository }} --limit 100 --json tagName \
+            --jq ".[] | .tagName | select(startswith(\"pr-${PR}-test-\"))" \
+            | while read -r tag; do
+                gh release delete "$tag" --repo ${{ github.repository }} --yes 2>/dev/null || true
+                gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/${tag}" 2>/dev/null || true
+                echo "Deleted: $tag"
+              done
+
   build:
+    if: github.event.action != 'closed'
     name: Build test .deb for PR
     runs-on: ubuntu-latest
     env:
