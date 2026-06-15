@@ -1,0 +1,45 @@
+name: PR Test Gate
+
+# Listens for /test-passed comment on a PR.
+# Sets the "test-gate" status check to success so the PR can be merged.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  pull-requests: write
+  statuses: write
+
+jobs:
+  confirm:
+    name: Mark test as passed
+    runs-on: ubuntu-latest
+    if: |
+      github.event.issue.pull_request != null &&
+      contains(github.event.comment.body, '/test-passed')
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Get PR head SHA
+        id: pr
+        run: |
+          SHA=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}" \
+                --jq '.head.sha')
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Set test-gate to success
+        env:
+          SHA: ${{ steps.pr.outputs.sha }}
+        run: |
+          gh api "repos/${{ github.repository }}/statuses/${SHA}" \
+            -f state=success \
+            -f context="test-gate" \
+            -f description="Confirmed by @${{ github.event.comment.user.login }}"
+
+      - name: React with thumbs-up
+        run: |
+          gh api \
+            "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+            -f content="+1"
