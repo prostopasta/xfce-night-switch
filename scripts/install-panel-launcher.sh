@@ -134,9 +134,10 @@ PLUGIN_ID=$(_get_plugin_id)
 LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-${PLUGIN_ID}"
 
 # Decide whether to (re)start xfce4-panel:
-#   - fresh install (plugin not in xfconf) → full restart required to load plugin
-#   - upgrade + panel running              → skip, panel already has plugin loaded
-#   - upgrade + panel dead (killed by bug) → start without pkill (nothing to kill)
+#   - fresh install (plugin not in xfconf)   → full restart required to load plugin
+#   - upgrade, same panel, panel running     → skip, nothing changed
+#   - upgrade, same panel, panel dead        → start without pkill
+#   - upgrade, panel changed                 → restart so new layout is applied
 _existing_type=$(xfconf-query -c xfce4-panel \
     -p "/plugins/plugin-${PLUGIN_ID}" 2>/dev/null || true)
 _panel_running=false
@@ -144,12 +145,18 @@ pgrep -x xfce4-panel > /dev/null 2>&1 && _panel_running=true
 _NEED_PANEL_RESTART=true
 _NEED_PANEL_START=false
 if [ "$_existing_type" = "launcher" ]; then
-    if $_panel_running; then
-        _NEED_PANEL_RESTART=false   # upgrade, panel alive — nothing to do
-    else
-        _NEED_PANEL_RESTART=false   # upgrade, panel dead — just start it
-        _NEED_PANEL_START=true
+    _saved_panel=$(grep '^XFCE_LAUNCHER_PANELS=' "$SWITCHER_CONFIG" 2>/dev/null \
+                   | cut -d'"' -f2 | tr -s ' ' '\n' | head -1)
+    if [ "${_saved_panel:-}" = "$TARGET_PANEL" ]; then
+        # Same panel — layout unchanged, no restart needed
+        if $_panel_running; then
+            _NEED_PANEL_RESTART=false
+        else
+            _NEED_PANEL_RESTART=false   # panel dead — just start it
+            _NEED_PANEL_START=true
+        fi
     fi
+    # Different panel → keep _NEED_PANEL_RESTART=true so xfce4-panel reloads layout
 fi
 
 echo "Primary panel : $TARGET_PANEL"
