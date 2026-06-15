@@ -20,6 +20,14 @@ ICON_NIGHT="$HOME/.local/share/icons/hicolor/scalable/apps/theme-moon.svg"
 # Set after source so XFCE_PLUGIN_ID from config is available
 PANEL_LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-${XFCE_PLUGIN_ID:-101}"
 
+# Load locale strings for localized tooltips
+S_TOOLTIP_DAY="Day mode (click to switch to night)"
+S_TOOLTIP_NIGHT="Night mode (click to switch to day)"
+_locale="${HOME}/.config/theme-switcher/locales/${APP_LANG:-en}.sh"
+[ ! -f "$_locale" ] && _locale="${XFCE_NIGHT_SWITCH_DIR:-/usr/share/xfce-night-switch}/locales/${APP_LANG:-en}.sh"
+# shellcheck source=/dev/null
+[ -f "$_locale" ] && source "$_locale"
+
 update_field() {
     local file=$1 field=$2 value=$3
     [ -f "$file" ] || return
@@ -79,25 +87,25 @@ CURRENT=$(xfconf-query -c xsettings -p /Net/ThemeName 2>/dev/null)
 case "${1:-toggle}" in
     light)
         apply_theme "$LIGHT_THEME" "default" "$TERM_PROFILE_LIGHT" \
-            "$ICON_DAY" "Day mode (click to switch to night)"
+            "$ICON_DAY" "$S_TOOLTIP_DAY"
         echo "light" > "$MANUAL_OVERRIDE"
         echo "Day: $LIGHT_THEME"
         ;;
     dark)
         apply_theme "$DARK_THEME" "prefer-dark" "$TERM_PROFILE_DARK" \
-            "$ICON_NIGHT" "Night mode (click to switch to day)"
+            "$ICON_NIGHT" "$S_TOOLTIP_NIGHT"
         echo "dark" > "$MANUAL_OVERRIDE"
         echo "Night: $DARK_THEME"
         ;;
     toggle)
         if [ "$CURRENT" = "$DARK_THEME" ]; then
             apply_theme "$LIGHT_THEME" "default" "$TERM_PROFILE_LIGHT" \
-                "$ICON_DAY" "Day mode (click to switch to night)"
+                "$ICON_DAY" "$S_TOOLTIP_DAY"
             echo "light" > "$MANUAL_OVERRIDE"
             echo "Day: $LIGHT_THEME"
         else
             apply_theme "$DARK_THEME" "prefer-dark" "$TERM_PROFILE_DARK" \
-                "$ICON_NIGHT" "Night mode (click to switch to day)"
+                "$ICON_NIGHT" "$S_TOOLTIP_NIGHT"
             echo "dark" > "$MANUAL_OVERRIDE"
             echo "Night: $DARK_THEME"
         fi
