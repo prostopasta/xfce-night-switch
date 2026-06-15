@@ -60,7 +60,7 @@ _install_deb() {
 # ── Source install (git clone) ──────────────────────────────────────────────
 _install_source() {
     BIN="$HOME/.local/bin"
-    CFG="$HOME/.config/theme-switcher"
+    CFG="$HOME/.config/xfce-night-switch"
     APPS="$HOME/.local/share/applications"
     ICONS="$HOME/.local/share/icons/hicolor/scalable/apps"
     SYSTEMD="$HOME/.config/systemd/user"
@@ -103,11 +103,11 @@ _install_source() {
     echo ""
     echo "── Config ─────────────────────────────────────"
     if [[ ! -f "$CFG/config" ]]; then
-        cp "$REPO/theme-switcher-config.default" "$CFG/config"
-        echo "  created: ~/.config/theme-switcher/config"
+        cp "$REPO/packaging/config.default" "$CFG/config"
+        echo "  created: ~/.config/xfce-night-switch/config"
         echo "  NOTE: defaults use Adwaita themes — run 'theme-settings.sh' to pick your themes"
     else
-        echo "  skipped (exists): ~/.config/theme-switcher/config"
+        echo "  skipped (exists): ~/.config/xfce-night-switch/config"
     fi
 
     echo ""

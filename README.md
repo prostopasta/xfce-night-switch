@@ -121,7 +121,7 @@ sudo apt install inkscape imagemagick
 
 ### Panel launcher
 
-The launcher is installed at `~/.config/xfce4/panel/launcher-N/` where `N` is a free plugin ID ≥ 100, detected automatically and saved to `~/.config/theme-switcher/config`. Two entries:
+The launcher is installed at `~/.config/xfce4/panel/launcher-N/` where `N` is a free plugin ID ≥ 100, detected automatically and saved to `~/.config/xfce-night-switch/config`. Two entries:
 
 - **Left item** — toggle between day/night theme instantly
 - **Arrow** — opens settings dialog
@@ -189,7 +189,7 @@ No `pip install`, no virtualenvs, no Node.js.
 
 ## Configuration
 
-Config lives at `~/.config/theme-switcher/config`:
+Config lives at `~/.config/xfce-night-switch/config`:
 
 ```bash
 # GTK themes — use 'theme-settings' GUI to pick from installed themes
@@ -221,8 +221,8 @@ Edit via `theme-settings` GUI or directly. The file is never overwritten on rein
 ## Adding a custom language
 
 ```bash
-cp ~/.config/theme-switcher/locales/en.sh ~/.config/theme-switcher/locales/de.sh
-nano ~/.config/theme-switcher/locales/de.sh
+cp ~/.config/xfce-night-switch/locales/en.sh ~/.config/xfce-night-switch/locales/de.sh
+nano ~/.config/xfce-night-switch/locales/de.sh
 # Select in settings: App language → de
 ```
 

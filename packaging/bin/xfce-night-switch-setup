@@ -4,13 +4,25 @@
 set -euo pipefail
 
 SHARE="/usr/share/xfce-night-switch"
-CONFIG_DIR="$HOME/.config/theme-switcher"
+CONFIG_DIR="$HOME/.config/xfce-night-switch"
 BIN_DIR="$HOME/.local/bin"
 APP_DIR="$HOME/.local/share/applications"
 ICON_DIR="$HOME/.local/share/icons/hicolor/scalable/apps"
 
 echo "=== xfce-night-switch setup for $USER ==="
 echo ""
+
+# ── Migrate old config/cache dirs ──────────────────────────────────────────
+OLD_CFG="$HOME/.config/theme-switcher"
+OLD_CACHE="$HOME/.cache/theme-switcher"
+if [ -d "$OLD_CFG" ] && [ ! -d "$CONFIG_DIR" ]; then
+    mv "$OLD_CFG" "$CONFIG_DIR"
+    echo "Migrated: $OLD_CFG → $CONFIG_DIR"
+fi
+if [ -d "$OLD_CACHE" ] && [ ! -d "$HOME/.cache/xfce-night-switch" ]; then
+    mv "$OLD_CACHE" "$HOME/.cache/xfce-night-switch"
+    echo "Migrated: $OLD_CACHE → ~/.cache/xfce-night-switch"
+fi
 
 # ── ~/.local/bin/ symlinks ─────────────────────────────────────────────────
 echo "Linking scripts to $BIN_DIR ..."

@@ -1,13 +1,25 @@
-LIGHT_THEME="Adwaita"
-DARK_THEME="Adwaita-dark"
-TERM_PROFILE_LIGHT="default"
-TERM_PROFILE_DARK="default"
+# xfce-night-switch default configuration.
+# Installed to ~/.config/xfce-night-switch/config — edit there, not here.
+# Use 'theme-settings' GUI to choose themes and icons interactively.
+
 ICON_DAY="weather-clear"
 ICON_NIGHT="$HOME/.local/share/icons/hicolor/scalable/apps/theme-moon.svg"
+
 AUTO_SWITCHER="enabled"
 AUTO_MODE="time"
 DAY_START="07:00"
 DAY_END="18:00"
 LATITUDE=""
 LONGITUDE=""
+
 APP_LANG="en"
+NOMINATIM_LANG="en"
+
+# GTK theme names — use 'theme-settings' GUI to pick from installed themes.
+# Safe cross-distro defaults (always available with gtk3):
+LIGHT_THEME="Adwaita"
+DARK_THEME="Adwaita-dark"
+
+# Terminator profile names — must match [[ProfileName]] in ~/.config/terminator/config
+TERM_PROFILE_LIGHT="default"
+TERM_PROFILE_DARK="default"
