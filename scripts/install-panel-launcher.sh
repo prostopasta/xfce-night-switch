@@ -5,11 +5,11 @@
 export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
 export DISPLAY=:0
 
-SWITCHER_CONFIG="$HOME/.config/theme-switcher/config"
+SWITCHER_CONFIG="$HOME/.config/xfce-night-switch/config"
 
 APP_LANG="en"
 [ -f "$SWITCHER_CONFIG" ] && source "$SWITCHER_CONFIG"
-LOCALE_FILE="$HOME/.config/theme-switcher/locales/${APP_LANG}.sh"
+LOCALE_FILE="$HOME/.config/xfce-night-switch/locales/${APP_LANG}.sh"
 [ -f "$LOCALE_FILE" ] || LOCALE_FILE="${XFCE_NIGHT_SWITCH_DIR:-/usr/share/xfce-night-switch}/locales/${APP_LANG}.sh"
 [ -f "$LOCALE_FILE" ] && source "$LOCALE_FILE"
 
@@ -133,6 +133,13 @@ fi
 PLUGIN_ID=$(_get_plugin_id)
 LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-${PLUGIN_ID}"
 
+# If the plugin slot is already registered as a launcher this is an upgrade —
+# the panel has it loaded already, no restart needed. Restart only on fresh install.
+_existing_type=$(xfconf-query -c xfce4-panel \
+    -p "/plugins/plugin-${PLUGIN_ID}" 2>/dev/null || true)
+_NEED_PANEL_RESTART=true
+[ "$_existing_type" = "launcher" ] && _NEED_PANEL_RESTART=false
+
 echo "Primary panel : $TARGET_PANEL"
 echo "Plugin ID     : $PLUGIN_ID"
 
@@ -239,9 +246,13 @@ if [ -f "$SWITCHER_CONFIG" ]; then
 fi
 
 echo "OK: plugin-${PLUGIN_ID} / launcher-${PLUGIN_ID} installed on ${TARGET_PANEL}"
-# Kill panel → modify xfconf is already done → start fresh from xfconf.
-# We intentionally avoid --restart because it saves in-memory state first,
-# which would overwrite the xfconf changes we just made.
-pkill -x xfce4-panel 2>/dev/null || true
-sleep 0.4
-xfce4-panel 2>/dev/null &
+if $_NEED_PANEL_RESTART; then
+    # Kill panel → modify xfconf is already done → start fresh from xfconf.
+    # We intentionally avoid --restart because it saves in-memory state first,
+    # which would overwrite the xfconf changes we just made.
+    pkill -x xfce4-panel 2>/dev/null || true
+    sleep 0.4
+    xfce4-panel 2>/dev/null &
+else
+    echo "  plugin already registered — panel restart skipped (upgrade)"
+fi
