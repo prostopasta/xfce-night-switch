@@ -2,7 +2,7 @@ Package: xfce-night-switch
 Version: __VERSION__
 Architecture: all
 Maintainer: prostopasta <https://github.com/prostopasta/xfce-night-switch>
-Depends: bash (>= 4.0), python3 (>= 3.6), python3-dbus, yad, curl
+Depends: bash (>= 4.0), python3 (>= 3.6), python3-dbus, yad, curl, wget
 Recommends: inkscape | imagemagick
 Homepage: https://github.com/prostopasta/xfce-night-switch
 Description: Day/night GTK theme switcher for XFCE
