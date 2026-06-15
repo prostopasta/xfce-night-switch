@@ -5,13 +5,6 @@ case "$1" in
         gtk-update-icon-cache -f /usr/share/icons/hicolor/ 2>/dev/null || true
         update-desktop-database /usr/share/applications/ 2>/dev/null || true
 
-        # Auto-run per-user setup for the user who invoked sudo
-        INSTALL_USER="${SUDO_USER:-}"
-        if [ -n "$INSTALL_USER" ] && id "$INSTALL_USER" >/dev/null 2>&1; then
-            su - "$INSTALL_USER" -c "xfce-night-switch-setup" \
-                || echo "  Setup had errors — run 'xfce-night-switch-setup' manually if needed"
-        else
-            echo "xfce-night-switch installed. Run 'xfce-night-switch-setup' as your user."
-        fi
+        echo "xfce-night-switch installed. Run 'xfce-night-switch-setup' to complete setup."
         ;;
 esac
