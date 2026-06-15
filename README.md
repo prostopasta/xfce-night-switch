@@ -121,7 +121,7 @@ The panel icon updates on every toggle and every cron run (every minute). If you
 │  Theme Switcher Settings                       │
 ├──────────────────────┬─────────────────────────┤
 │  🌙 Night icon       │  Tango • weather..      │
-│  ☀️  Day icon        │  Humanity • clear       │
+│  ☀️ Day icon        │  Humanity • clear       │
 │  🎨 Themes           │  [opens theme dialog]   │
 │  🖥️ Panel launcher   │  panel-0 (plugin-100)   │
 │  ⏱️ Auto-switcher    │  ✓ By location          │
