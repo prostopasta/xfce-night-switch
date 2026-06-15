@@ -61,21 +61,15 @@ for name in toggle-theme theme-settings; do
     echo "  $dst"
 done
 
-# ── Panel launcher (plugin-101) ────────────────────────────────────────────
+# ── Panel launcher ─────────────────────────────────────────────────────────
 echo ""
 echo "Panel launcher ..."
 if DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
    xfconf-query -c xfce4-panel -l >/dev/null 2>&1; then
     if bash "$BIN_DIR/install-panel-launcher.sh" 2>&1; then
-        # Kill + restart panel so it reads our xfconf changes.
-        # --restart saves in-memory state first, overwriting xfconf — avoid it.
-        sleep 0.3
-        DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
-        DISPLAY=:0 pkill -x xfce4-panel 2>/dev/null || true
-        sleep 0.4
-        DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
-        DISPLAY=:0 xfce4-panel 2>/dev/null &
-        echo "  launcher: installed, panel reloading"
+        # install-panel-launcher.sh already handles the panel restart internally.
+        # A second pkill here kills the panel before plugins initialize (breaks PulseAudio).
+        echo "  launcher: installed"
     else
         echo "  launcher: install failed — add manually: right-click panel → Add New Items → Launcher"
     fi
