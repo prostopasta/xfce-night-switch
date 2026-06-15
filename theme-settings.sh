@@ -5,15 +5,14 @@ export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
 export DISPLAY=:0
 
 SWITCHER_CONFIG="$HOME/.config/theme-switcher/config"
-PANEL_LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-101"
 APP_DESKTOP="$HOME/.local/share/applications/toggle-theme.desktop"
-LIGHT_THEME="ZorinBlue-Light"
-DARK_THEME="Mint-Y-Dark-Aqua"
-TERM_PROFILE_LIGHT="AdventureTime"
-TERM_PROFILE_DARK="dark-Blitz"
 ICON_CACHE="$HOME/.cache/theme-switcher/icons"
 
 # Defaults
+LIGHT_THEME="Adwaita"
+DARK_THEME="Adwaita-dark"
+TERM_PROFILE_LIGHT="default"
+TERM_PROFILE_DARK="default"
 ICON_DAY="weather-clear"
 ICON_NIGHT="$HOME/.local/share/icons/hicolor/scalable/apps/theme-moon.svg"
 AUTO_SWITCHER="enabled"
@@ -24,6 +23,9 @@ LATITUDE=""
 LONGITUDE=""
 APP_LANG="en"
 [ -f "$SWITCHER_CONFIG" ] && source "$SWITCHER_CONFIG"
+
+# Set after source so XFCE_PLUGIN_ID from config is available
+PANEL_LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-${XFCE_PLUGIN_ID:-101}"
 
 LOCALES_DIR="$HOME/.config/theme-switcher/locales"
 
@@ -150,7 +152,7 @@ _get_panel_size() {
                    | sed 's|/plugin-ids||'); do
         if DBUS_SESSION_BUS_ADDRESS=$dbus \
            xfconf-query -c xfce4-panel -p "${panel}/plugin-ids" 2>/dev/null \
-           | grep -qw 101; then
+           | grep -qw "${XFCE_PLUGIN_ID:-101}"; then
             DBUS_SESSION_BUS_ADDRESS=$dbus \
                 xfconf-query -c xfce4-panel -p "${panel}/size" 2>/dev/null \
                 && return
