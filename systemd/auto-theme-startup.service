@@ -4,7 +4,7 @@ After=graphical-session.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/auto-theme
+ExecStart=%h/.local/bin/auto-theme.sh
 
 [Install]
 WantedBy=default.target
