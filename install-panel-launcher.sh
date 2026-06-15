@@ -105,10 +105,10 @@ _ask_panel_yad() {
         rows+=("$pname" "${pname}${has_clock}${is_current}")
     done
     local sel
-    sel=$(yad --title="Select panel" --width=400 --height=260 \
-        --list --column=":HD" --column="Panel" \
+    sel=$(yad --title="${S_PANEL_TITLE:-Panel Launcher}" --width=400 --height=260 \
+        --list --column=":HD" --column="${S_COL_SETTING:-Panel}" \
         --print-column=1 --no-headers \
-        --text="Multiple panels found.\nSelect where to install the launcher\n(default: panel with clock):" \
+        --text="${S_PANEL_CHOOSE:-Select which panel to install the launcher on:}" \
         "${rows[@]}" \
         --button="gtk-ok:0" --button="gtk-cancel:1" 2>/dev/null)
     sel="${sel%|}"

@@ -3,10 +3,10 @@
 export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
 export DISPLAY=:0
 
-LIGHT_THEME="ZorinBlue-Light"
-DARK_THEME="Mint-Y-Dark-Aqua"
-TERM_PROFILE_LIGHT="AdventureTime"
-TERM_PROFILE_DARK="dark-Blitz"
+LIGHT_THEME="Adwaita"
+DARK_THEME="Adwaita-dark"
+TERM_PROFILE_LIGHT="default"
+TERM_PROFILE_DARK="default"
 TERM_CONFIG="$HOME/.config/terminator/config"
 APP_DESKTOP="$HOME/.local/share/applications/toggle-theme.desktop"
 SWITCHER_CONFIG="$HOME/.config/theme-switcher/config"
