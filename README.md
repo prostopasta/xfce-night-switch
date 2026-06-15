@@ -49,10 +49,17 @@
 
 ## Quick install
 
-### Option A — .deb package (Ubuntu / Debian / Mint, recommended)
+### Option A — install script (Ubuntu / Debian / Mint, easiest)
 
 ```bash
-# Download and install latest release (one line)
+bash <(curl -fsSL https://github.com/prostopasta/xfce-night-switch/releases/latest/download/install-latest.sh)
+```
+
+Checks for missing prerequisites, downloads the latest `.deb`, installs it with `sudo dpkg -i`, and prints the next step.
+
+### Option B — .deb package (manual)
+
+```bash
 wget -qO- https://api.github.com/repos/prostopasta/xfce-night-switch/releases/latest \
   | grep browser_download_url | grep '\.deb' | cut -d'"' -f4 \
   | xargs wget -O xfce-night-switch.deb && sudo dpkg -i xfce-night-switch.deb
@@ -66,12 +73,21 @@ sudo dpkg -r xfce-night-switch      # remove (keeps config)
 sudo dpkg -P xfce-night-switch      # purge (removes config too)
 ```
 
-### Option B — git clone (any distro)
+### Option C — git clone (any distro)
 
 ```bash
 git clone https://github.com/prostopasta/xfce-night-switch.git
 cd xfce-night-switch
 bash install.sh
+```
+
+### Prerequisites
+
+Installed automatically by the install script. For manual installs:
+```bash
+sudo apt install yad curl wget python3 python3-dbus cron
+# Optional (for icon rendering in settings):
+sudo apt install inkscape imagemagick
 ```
 
 ---

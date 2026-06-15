@@ -192,3 +192,4 @@ jobs:
           body: ${{ steps.notes.outputs.body }}
           files: |
             xfce-night-switch_${{ steps.version.outputs.version }}_all.deb
+            install-latest.sh
