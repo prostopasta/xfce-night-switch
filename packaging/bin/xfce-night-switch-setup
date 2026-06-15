@@ -144,19 +144,48 @@ if [ -f "$PR_NUM_FILE" ]; then
     printf "│  Check: panel visible · toggle works · settings OK  │\n"
     printf "└─────────────────────────────────────────────────────┘\n"
 
-    # Use yad GUI dialog (immune to background terminal output)
+    # Build checklist rows: from TEST_PLAN file if present, else defaults
+    _checklist_args=()
+    TEST_PLAN_FILE="$SHARE/TEST_PLAN"
+    if [ -f "$TEST_PLAN_FILE" ]; then
+        while IFS= read -r line; do
+            # Strip "- [ ] " prefix if present
+            item="${line#- \[ \] }"
+            item="${item#- }"
+            [ -n "$item" ] && _checklist_args+=(FALSE "$item")
+        done < "$TEST_PLAN_FILE"
+    fi
+    # Always add standard items
+    _checklist_args+=(
+        FALSE "Panel icon visible in taskbar"
+        FALSE "Left-click toggles day ↔ night theme"
+        FALSE "Arrow opens Theme Settings dialog"
+        FALSE "No errors: journalctl --user -u xfce-night-switch-startup.service"
+    )
+
+    # Use yad checklist dialog (immune to background terminal output)
     _confirmed=false
     if command -v yad >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
-        if yad --question \
-               --title="🧪 xfce-night-switch — Test Build PR #${PR_NUM}" \
-               --text="<b>Test build installed.</b>\n\nDoes everything work?\n• Panel icon visible\n• Toggle switches theme\n• Settings dialog opens" \
-               --button="Yes, it works!:0" \
-               --button="No, report issue:1" \
-               --width=380 2>/dev/null; then
-            _confirmed=true
-        fi
+        _result=$(yad --list --checklist \
+            --title="🧪 xfce-night-switch — Test Build PR #${PR_NUM}" \
+            --text="<b>Check all items before confirming:</b>" \
+            --column=":CHK" --column="Test item" \
+            --print-all --separator="|" \
+            "${_checklist_args[@]}" \
+            --button="Confirm — all good:0" \
+            --button="Cancel — found issues:1" \
+            --width=520 --height=300 2>/dev/null) && {
+            # All items must be TRUE
+            if echo "$_result" | grep -q "^FALSE|"; then
+                yad --warning \
+                    --text="Please check all items before confirming." \
+                    --button="OK:0" --width=300 2>/dev/null || true
+            else
+                _confirmed=true
+            fi
+        } || true
     elif [ -t 0 ] && [ -t 1 ]; then
-        read -r -p "Everything works correctly? [y/N]: " yn
+        read -r -p "All checks passed? [y/N]: " yn
         [[ "${yn:-}" =~ ^[Yy]$ ]] && _confirmed=true
     fi
 
