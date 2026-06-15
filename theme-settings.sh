@@ -139,8 +139,10 @@ _load_strings
 
 # ── Panel restart ───────────────────────────────────────────────────────────
 _restart_panel() {
+    pkill -x xfce4-panel 2>/dev/null || true
+    sleep 0.4
     DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
-        DISPLAY=:0 xfce4-panel --restart 2>/dev/null &
+        DISPLAY=:0 xfce4-panel 2>/dev/null &
 }
 
 # ── Auto-detect panel size ──────────────────────────────────────────────────
@@ -434,7 +436,7 @@ show_auto_dialog() {
     fi
     local sun_preview=""
     if [ -n "$lat" ] && [ -n "$lon" ]; then
-        local times; times=$(python3 "$HOME/.local/bin/sunrise-sunset.py" "$lat" "$lon" both 2>/dev/null)
+        local times; times=$(python3 "${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/sunrise-sunset.py" "$lat" "$lon" both 2>/dev/null)
         [ -n "$times" ] && sun_preview="  (☀ $(echo $times | cut -d' ' -f1) — 🌙 $(echo $times | cut -d' ' -f2))"
     fi
     local enabled_val="FALSE"; [ "$AUTO_SWITCHER" = "enabled" ] && enabled_val="TRUE"
