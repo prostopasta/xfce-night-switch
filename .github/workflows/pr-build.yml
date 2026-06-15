@@ -28,15 +28,17 @@ jobs:
         run: |
           PR="${{ github.event.pull_request.number }}"
           SHA="${{ github.event.pull_request.head.sha }}"
+          SHORT="${SHA:0:7}"
 
           LATEST=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
           [[ -z "$LATEST" ]] && LATEST="v0.0.0"
           BASE="${LATEST#v}"
 
-          echo "pr=$PR"                       >> "$GITHUB_OUTPUT"
-          echo "sha=$SHA"                     >> "$GITHUB_OUTPUT"
-          echo "tag=pr-${PR}-test"            >> "$GITHUB_OUTPUT"
-          echo "version=${BASE}-pr.${PR}"     >> "$GITHUB_OUTPUT"
+          echo "pr=$PR"                              >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA"                            >> "$GITHUB_OUTPUT"
+          echo "short=$SHORT"                        >> "$GITHUB_OUTPUT"
+          echo "tag=pr-${PR}-test-${SHORT}"          >> "$GITHUB_OUTPUT"
+          echo "version=${BASE}-pr.${PR}.${SHORT}"   >> "$GITHUB_OUTPUT"
 
       - name: Build .deb
         env:
@@ -84,21 +86,19 @@ jobs:
           dpkg-deb --build --root-owner-group "$PKG"
           echo "Built: ${PKG}.deb"
 
-      - name: Create/replace pre-release
+      - name: Create pre-release
         env:
           TAG:     ${{ steps.info.outputs.tag }}
           SHA:     ${{ steps.info.outputs.sha }}
           PR_NUM:  ${{ steps.info.outputs.pr }}
+          SHORT:   ${{ steps.info.outputs.short }}
           VERSION: ${{ steps.info.outputs.version }}
         run: |
-          gh release delete "$TAG" --yes 2>/dev/null || true
-          git push origin --delete "$TAG" 2>/dev/null || true
-
           gh release create "$TAG" \
             --prerelease \
             --target "$SHA" \
-            --title "Test build — PR #${PR_NUM}" \
-            --notes "Automated test build for PR #${PR_NUM}. **Not for production use.**" \
+            --title "Test build — PR #${PR_NUM} @ ${SHORT}" \
+            --notes "Automated test build for PR #${PR_NUM} (commit \`${SHORT}\`). **Not for production use.**" \
             "xfce-night-switch_${VERSION}_all.deb"
 
       - name: Post/update PR comment
