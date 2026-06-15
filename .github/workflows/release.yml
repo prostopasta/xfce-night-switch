@@ -135,8 +135,8 @@ jobs:
           install -m644 icons/theme-moon.svg "$ICONS/theme-moon.svg"
 
           # ── Systemd units ────────────────────────────────────────────────────
-          install -m644 systemd/auto-theme-startup.service "$SYSTEMD/auto-theme-startup.service"
-          install -m644 systemd/auto-update.service        "$SYSTEMD/auto-update.service"
+          install -m644 systemd/xfce-night-switch-startup.service "$SYSTEMD/xfce-night-switch-startup.service"
+          install -m644 systemd/xfce-night-switch-update.service        "$SYSTEMD/xfce-night-switch-update.service"
 
           # ── DEBIAN/ ──────────────────────────────────────────────────────────
           sed "s/__VERSION__/$VERSION/" packaging/DEBIAN/control.template > "$PKG/DEBIAN/control"

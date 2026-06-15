@@ -81,13 +81,16 @@ fi
 echo ""
 echo "Systemd service ..."
 if systemctl --user show-environment >/dev/null 2>&1; then
+    # Migrate: disable old service names from previous versions
+    systemctl --user disable --now auto-theme-startup.service 2>/dev/null || true
+    systemctl --user disable auto-update.service 2>/dev/null || true
     systemctl --user daemon-reload
-    systemctl --user enable --now auto-theme-startup.service 2>/dev/null \
-        && echo "  auto-theme-startup.service: enabled" \
-        || echo "  auto-theme-startup.service: could not enable — run: systemctl --user enable --now auto-theme-startup.service"
-    systemctl --user enable auto-update.service 2>/dev/null \
-        && echo "  auto-update.service: enabled" \
-        || echo "  auto-update.service: could not enable"
+    systemctl --user enable --now xfce-night-switch-startup.service 2>/dev/null \
+        && echo "  xfce-night-switch-startup.service: enabled" \
+        || echo "  xfce-night-switch-startup.service: could not enable — run: systemctl --user enable --now xfce-night-switch-startup.service"
+    systemctl --user enable xfce-night-switch-update.service 2>/dev/null \
+        && echo "  xfce-night-switch-update.service: enabled" \
+        || echo "  xfce-night-switch-update.service: could not enable"
 else
     echo "  systemd --user unavailable — run setup again from a graphical session"
 fi

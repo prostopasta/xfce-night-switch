@@ -27,7 +27,7 @@ _cleanup_user() {
     fi
 
     # Disable systemd startup service
-    su - "$user" -c "systemctl --user disable --now auto-theme-startup.service 2>/dev/null || true" 2>/dev/null || true
+    su - "$user" -c "systemctl --user disable --now xfce-night-switch-startup.service 2>/dev/null || true" 2>/dev/null || true
 
     # Remove XFCE panel launcher — read saved plugin ID and panel from config
     local cfg="$home/.config/theme-switcher/config"
