@@ -116,12 +116,14 @@ jobs:
           install -m755 theme-settings.sh         "$SHARE/theme-settings.sh"
           install -m755 install-panel-launcher.sh "$SHARE/install-panel-launcher.sh"
           install -m755 sunrise-sunset.py         "$SHARE/sunrise-sunset.py"
+          install -m755 auto-update.sh            "$SHARE/auto-update.sh"
           install -m644 packaging/config.default  "$SHARE/config.default"
           install -m644 locales/en.sh             "$SHARE/locales/en.sh"
           install -m644 locales/ru.sh             "$SHARE/locales/ru.sh"
+          echo "$VERSION" > "$SHARE/VERSION"
 
           # ── Wrappers in /usr/bin/ ────────────────────────────────────────────
-          for w in auto-theme theme-settings toggle-theme xfce-night-switch-setup; do
+          for w in auto-theme theme-settings toggle-theme xfce-night-switch-setup auto-update; do
             install -m755 "packaging/bin/$w" "$PKG/usr/bin/$w"
           done
 
@@ -132,8 +134,9 @@ jobs:
           # ── Icon ─────────────────────────────────────────────────────────────
           install -m644 icons/theme-moon.svg "$ICONS/theme-moon.svg"
 
-          # ── Systemd unit ─────────────────────────────────────────────────────
+          # ── Systemd units ────────────────────────────────────────────────────
           install -m644 auto-theme-startup.service "$SYSTEMD/auto-theme-startup.service"
+          install -m644 auto-update.service        "$SYSTEMD/auto-update.service"
 
           # ── DEBIAN/ ──────────────────────────────────────────────────────────
           sed "s/__VERSION__/$VERSION/" packaging/DEBIAN/control.template > "$PKG/DEBIAN/control"

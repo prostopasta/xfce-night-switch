@@ -1,0 +1,11 @@
+[Unit]
+Description=xfce-night-switch update check
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/sleep 15
+ExecStart=%h/.local/bin/auto-update.sh
+
+[Install]
+WantedBy=default.target

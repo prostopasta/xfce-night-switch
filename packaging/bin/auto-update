@@ -1,0 +1,3 @@
+#!/bin/bash
+export XFCE_NIGHT_SWITCH_DIR="/usr/share/xfce-night-switch"
+exec /usr/share/xfce-night-switch/auto-update.sh "$@"
