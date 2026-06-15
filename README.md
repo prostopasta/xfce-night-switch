@@ -49,23 +49,22 @@
 
 ## Quick install
 
-### Option A — install script (Ubuntu / Debian / Mint, easiest)
+### Option A — one-liner (Ubuntu / Debian / Mint)
 
 ```bash
-bash <(curl -fsSL https://github.com/prostopasta/xfce-night-switch/releases/latest/download/install-latest.sh)
+bash <(curl -fsSL https://github.com/prostopasta/xfce-night-switch/releases/latest/download/install.sh)
 ```
 
-Checks for missing prerequisites, downloads the latest `.deb`, installs it with `sudo dpkg -i`, and prints the next step.
+Checks for missing prerequisites, downloads the latest `.deb`, installs with `sudo dpkg -i`.
 
-### Option B — .deb package (manual)
+### Option B — git clone (any distro / development)
 
 ```bash
-wget -qO- https://api.github.com/repos/prostopasta/xfce-night-switch/releases/latest \
-  | grep browser_download_url | grep '\.deb' | cut -d'"' -f4 \
-  | xargs wget -O xfce-night-switch.deb && sudo dpkg -i xfce-night-switch.deb
+git clone https://github.com/prostopasta/xfce-night-switch.git
+cd xfce-night-switch && bash install.sh
 ```
 
-`dpkg` runs `xfce-night-switch-setup` automatically for `$SUDO_USER`. The panel launcher is added, cron is configured, systemd service is enabled — no manual steps needed.
+Same `install.sh` — auto-detects it's running from a git clone and installs from local source files instead.
 
 To remove:
 ```bash
@@ -73,12 +72,13 @@ sudo dpkg -r xfce-night-switch      # remove (keeps config)
 sudo dpkg -P xfce-night-switch      # purge (removes config too)
 ```
 
-### Option C — git clone (any distro)
+### Prerequisites
 
+Installed automatically by the install script. For manual installs:
 ```bash
-git clone https://github.com/prostopasta/xfce-night-switch.git
-cd xfce-night-switch
-bash install.sh
+sudo apt install yad curl wget python3 python3-dbus cron
+# Optional (for icon rendering in settings):
+sudo apt install inkscape imagemagick
 ```
 
 ### Prerequisites
