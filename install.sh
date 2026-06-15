@@ -112,16 +112,16 @@ _install_source() {
 
     echo ""
     echo "── Systemd services ───────────────────────────"
-    cp "$REPO/systemd/auto-theme-startup.service" "$SYSTEMD/auto-theme-startup.service"
-    cp "$REPO/systemd/auto-update.service"        "$SYSTEMD/auto-update.service"
+    cp "$REPO/systemd/xfce-night-switch-startup.service" "$SYSTEMD/xfce-night-switch-startup.service"
+    cp "$REPO/systemd/xfce-night-switch-update.service"        "$SYSTEMD/xfce-night-switch-update.service"
     if command -v systemctl >/dev/null 2>&1 && systemctl --user show-environment >/dev/null 2>&1; then
         systemctl --user daemon-reload
-        systemctl --user enable --now auto-theme-startup.service 2>/dev/null \
-            && echo "  enabled: auto-theme-startup.service" \
-            || echo "  warning: run: systemctl --user enable --now auto-theme-startup.service"
-        systemctl --user enable auto-update.service 2>/dev/null \
-            && echo "  enabled: auto-update.service" \
-            || echo "  warning: could not enable auto-update.service"
+        systemctl --user enable --now xfce-night-switch-startup.service 2>/dev/null \
+            && echo "  enabled: xfce-night-switch-startup.service" \
+            || echo "  warning: run: systemctl --user enable --now xfce-night-switch-startup.service"
+        systemctl --user enable xfce-night-switch-update.service 2>/dev/null \
+            && echo "  enabled: xfce-night-switch-update.service" \
+            || echo "  warning: could not enable xfce-night-switch-update.service"
     else
         echo "  installed: services (enable manually after login)"
     fi
