@@ -18,15 +18,15 @@ mkdir -p "$BIN" "$CFG/locales" "$APPS" "$ICONS" "$SYSTEMD"
 echo "── Scripts ────────────────────────────────────"
 for f in auto-theme.sh toggle-theme.sh theme-settings.sh \
           install-panel-launcher.sh sunrise-sunset.py auto-update.sh; do
-    cp "$REPO/$f" "$BIN/$f"
+    cp "$REPO/scripts/$f" "$BIN/$f"
     chmod +x "$BIN/$f"
     echo "  installed: ~/.local/bin/$f"
 done
 
 echo ""
 echo "── Desktop entries ────────────────────────────"
-cp "$REPO/toggle-theme.desktop"   "$APPS/toggle-theme.desktop"
-cp "$REPO/theme-settings.desktop" "$APPS/theme-settings.desktop"
+cp "$REPO/desktop/toggle-theme.desktop"   "$APPS/toggle-theme.desktop"
+cp "$REPO/desktop/theme-settings.desktop" "$APPS/theme-settings.desktop"
 update-desktop-database "$APPS" 2>/dev/null || true
 echo "  installed: ~/.local/share/applications/"
 
@@ -57,8 +57,8 @@ fi
 
 echo ""
 echo "── Systemd service ────────────────────────────"
-cp "$REPO/auto-theme-startup.service" "$SYSTEMD/auto-theme-startup.service"
-cp "$REPO/auto-update.service"        "$SYSTEMD/auto-update.service"
+cp "$REPO/systemd/auto-theme-startup.service" "$SYSTEMD/auto-theme-startup.service"
+cp "$REPO/systemd/auto-update.service"        "$SYSTEMD/auto-update.service"
 if command -v systemctl >/dev/null 2>&1 && systemctl --user show-environment >/dev/null 2>&1; then
     systemctl --user daemon-reload
     systemctl --user enable --now auto-theme-startup.service 2>/dev/null \
