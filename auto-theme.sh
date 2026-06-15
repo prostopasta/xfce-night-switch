@@ -29,6 +29,14 @@ LONGITUDE=""
 # Set after source so XFCE_PLUGIN_ID from config is available
 PANEL_LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-${XFCE_PLUGIN_ID:-101}"
 
+# Load locale strings for localized tooltips
+S_TOOLTIP_DAY="Day mode (click to switch to night)"
+S_TOOLTIP_NIGHT="Night mode (click to switch to day)"
+_locale="${HOME}/.config/theme-switcher/locales/${APP_LANG:-en}.sh"
+[ ! -f "$_locale" ] && _locale="${XFCE_NIGHT_SWITCH_DIR:-/usr/share/xfce-night-switch}/locales/${APP_LANG:-en}.sh"
+# shellcheck source=/dev/null
+[ -f "$_locale" ] && source "$_locale"
+
 [ "$AUTO_SWITCHER" != "enabled" ] && exit 0
 
 update_field() {
@@ -104,13 +112,13 @@ if [[ "$NOW" > "$DAY_START" || "$NOW" == "$DAY_START" ]] && [[ "$NOW" < "$DAY_EN
     WANT_MODE="default"
     WANT_TERM_PROFILE="$TERM_PROFILE_LIGHT"
     WANT_ICON="$ICON_DAY"
-    WANT_TOOLTIP="Day mode (click to switch to night)"
+    WANT_TOOLTIP="$S_TOOLTIP_DAY"
 else
     WANT_THEME="$DARK_THEME"
     WANT_MODE="prefer-dark"
     WANT_TERM_PROFILE="$TERM_PROFILE_DARK"
     WANT_ICON="$ICON_NIGHT"
-    WANT_TOOLTIP="Night mode (click to switch to day)"
+    WANT_TOOLTIP="$S_TOOLTIP_NIGHT"
 fi
 
 # Respect manual override: skip until schedule agrees
