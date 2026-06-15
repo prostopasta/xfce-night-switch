@@ -1,19 +1,20 @@
 name: PR Test Gate
 
 # Listens for /test-passed comment on a PR.
-# Sets the "test-gate" status check to success so the PR can be merged.
+# Sets the "test-gate" status check to success, then auto-merges and deletes branch.
 
 on:
   issue_comment:
     types: [created]
 
 permissions:
+  contents: write
   pull-requests: write
   statuses: write
 
 jobs:
   confirm:
-    name: Mark test as passed
+    name: Confirm test, merge, and clean up
     runs-on: ubuntu-latest
     if: |
       github.event.issue.pull_request != null &&
@@ -22,12 +23,21 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - name: Get PR head SHA
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR info
         id: pr
         run: |
-          SHA=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}" \
-                --jq '.head.sha')
-          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          PR="${{ github.event.issue.number }}"
+          DATA=$(gh api "repos/${{ github.repository }}/pulls/${PR}")
+          SHA=$(echo "$DATA"   | jq -r '.head.sha')
+          BRANCH=$(echo "$DATA" | jq -r '.head.ref')
+          echo "sha=$SHA"       >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "pr=$PR"         >> "$GITHUB_OUTPUT"
 
       - name: Set test-gate to success
         env:
@@ -43,3 +53,31 @@ jobs:
           gh api \
             "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
             -f content="+1"
+
+      - name: Wait for all required checks to pass
+        env:
+          SHA: ${{ steps.pr.outputs.sha }}
+          PR:  ${{ steps.pr.outputs.pr }}
+        run: |
+          echo "Waiting for all checks on ${SHA}..."
+          for i in $(seq 1 24); do
+            STATE=$(gh api "repos/${{ github.repository }}/commits/${SHA}/check-runs" \
+              --jq '[.check_runs[] | select(.status != "completed")] | length')
+            FAILED=$(gh api "repos/${{ github.repository }}/commits/${SHA}/check-runs" \
+              --jq '[.check_runs[] | select(.conclusion == "failure" or .conclusion == "cancelled")] | length')
+            echo "  attempt $i — pending: ${STATE}, failed: ${FAILED}"
+            [ "${FAILED}" -gt 0 ] && { echo "A required check failed — aborting merge."; exit 1; }
+            [ "${STATE}" -eq 0 ] && { echo "All checks passed."; break; }
+            sleep 10
+          done
+
+      - name: Merge PR (squash)
+        env:
+          PR: ${{ steps.pr.outputs.pr }}
+        run: |
+          gh pr merge "$PR" \
+            --repo "${{ github.repository }}" \
+            --squash \
+            --delete-branch \
+            --admin
+          echo "PR #${PR} merged and branch deleted."

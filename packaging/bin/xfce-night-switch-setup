@@ -4,13 +4,25 @@
 set -euo pipefail
 
 SHARE="/usr/share/xfce-night-switch"
-CONFIG_DIR="$HOME/.config/theme-switcher"
+CONFIG_DIR="$HOME/.config/xfce-night-switch"
 BIN_DIR="$HOME/.local/bin"
 APP_DIR="$HOME/.local/share/applications"
 ICON_DIR="$HOME/.local/share/icons/hicolor/scalable/apps"
 
 echo "=== xfce-night-switch setup for $USER ==="
 echo ""
+
+# ── Migrate old config/cache dirs ──────────────────────────────────────────
+OLD_CFG="$HOME/.config/theme-switcher"
+OLD_CACHE="$HOME/.cache/theme-switcher"
+if [ -d "$OLD_CFG" ] && [ ! -d "$CONFIG_DIR" ]; then
+    mv "$OLD_CFG" "$CONFIG_DIR"
+    echo "Migrated: $OLD_CFG → $CONFIG_DIR"
+fi
+if [ -d "$OLD_CACHE" ] && [ ! -d "$HOME/.cache/xfce-night-switch" ]; then
+    mv "$OLD_CACHE" "$HOME/.cache/xfce-night-switch"
+    echo "Migrated: $OLD_CACHE → ~/.cache/xfce-night-switch"
+fi
 
 # ── ~/.local/bin/ symlinks ─────────────────────────────────────────────────
 echo "Linking scripts to $BIN_DIR ..."
@@ -98,12 +110,23 @@ fi
 # ── Cron ───────────────────────────────────────────────────────────────────
 echo ""
 source "$CONFIG_DIR/config" 2>/dev/null || true
+LOG_DIR="$HOME/.local/share/xfce-night-switch"
+CRON_CMD="*/1 * * * * $BIN_DIR/auto-theme.sh >> $LOG_DIR/auto-theme.log 2>&1"
 if [ "${AUTO_SWITCHER:-enabled}" = "enabled" ]; then
+    mkdir -p "$LOG_DIR"
     if ! crontab -l 2>/dev/null | grep -q 'auto-theme.sh'; then
-        (crontab -l 2>/dev/null; echo "*/1 * * * * $BIN_DIR/auto-theme.sh") | crontab -
-        echo "Cron: auto-theme.sh added (every minute)"
+        (crontab -l 2>/dev/null; echo "$CRON_CMD") | crontab -
+        echo "Cron: auto-theme.sh added (every minute, log: $LOG_DIR/auto-theme.log)"
     else
-        echo "Cron: already present"
+        # Migrate old entry without log redirect
+        if ! crontab -l 2>/dev/null | grep -q 'auto-theme.log'; then
+            crontab -l 2>/dev/null \
+                | sed "s|.*/auto-theme\.sh.*|$CRON_CMD|" \
+                | crontab -
+            echo "Cron: updated (added log redirect)"
+        else
+            echo "Cron: already present"
+        fi
     fi
 fi
 
@@ -114,31 +137,42 @@ echo "Done. Run 'theme-settings' to configure themes and icons."
 PR_NUM_FILE="$SHARE/PR_NUMBER"
 if [ -f "$PR_NUM_FILE" ]; then
     PR_NUM=$(cat "$PR_NUM_FILE")
+    PR_URL="https://github.com/prostopasta/xfce-night-switch/pull/${PR_NUM}"
     echo ""
-    echo "┌────────────────────────────────────────────────────────────┐"
-    echo "│  TEST BUILD — PR #${PR_NUM}                                │"
-    echo "│  Test: panel icon ✓  toggle works ✓  settings open ✓      │"
-    echo "└────────────────────────────────────────────────────────────┘"
-    if [ -t 0 ] && [ -t 1 ]; then
+    printf "┌─────────────────────────────────────────────────────┐\n"
+    printf "│  🧪 TEST BUILD — PR #%-4s                           │\n" "$PR_NUM"
+    printf "│  Check: panel visible · toggle works · settings OK  │\n"
+    printf "└─────────────────────────────────────────────────────┘\n"
+
+    # Use yad GUI dialog (immune to background terminal output)
+    _confirmed=false
+    if command -v yad >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+        if yad --question \
+               --title="🧪 xfce-night-switch — Test Build PR #${PR_NUM}" \
+               --text="<b>Test build installed.</b>\n\nDoes everything work?\n• Panel icon visible\n• Toggle switches theme\n• Settings dialog opens" \
+               --button="Yes, it works!:0" \
+               --button="No, report issue:1" \
+               --width=380 2>/dev/null; then
+            _confirmed=true
+        fi
+    elif [ -t 0 ] && [ -t 1 ]; then
         read -r -p "Everything works correctly? [y/N]: " yn
-        if [[ "${yn:-}" =~ ^[Yy]$ ]]; then
-            if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
-                gh pr comment "$PR_NUM" \
-                    --repo prostopasta/xfce-night-switch \
-                    --body '/test-passed' \
-                    && echo "Confirmed! PR #${PR_NUM} test gate passed." \
-                    || echo "Could not post comment — confirm manually:"  \
-                    && echo "  https://github.com/prostopasta/xfce-night-switch/pull/${PR_NUM}"
-            else
-                echo "Post /test-passed on PR #${PR_NUM} to unblock merge:"
-                echo "  https://github.com/prostopasta/xfce-night-switch/pull/${PR_NUM}"
-            fi
+        [[ "${yn:-}" =~ ^[Yy]$ ]] && _confirmed=true
+    fi
+
+    if $_confirmed; then
+        if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+            gh pr comment "$PR_NUM" \
+                --repo prostopasta/xfce-night-switch \
+                --body '/test-passed' \
+                && echo "Confirmed! PR #${PR_NUM} test gate passed." \
+                || { echo "Could not post comment — confirm manually:"; echo "  $PR_URL"; }
         else
-            echo "Please comment what failed on PR #${PR_NUM}:"
-            echo "  https://github.com/prostopasta/xfce-night-switch/pull/${PR_NUM}"
+            echo "Post /test-passed on PR #${PR_NUM} to unblock merge:"
+            echo "  $PR_URL"
         fi
     else
-        echo "After testing, confirm by posting /test-passed on:"
-        echo "  https://github.com/prostopasta/xfce-night-switch/pull/${PR_NUM}"
+        echo "Please comment what failed on PR #${PR_NUM}:"
+        echo "  $PR_URL"
     fi
 fi

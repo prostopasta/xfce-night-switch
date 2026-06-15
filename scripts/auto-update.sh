@@ -6,8 +6,8 @@ export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
 export DISPLAY=:0
 
 SHARE="${XFCE_NIGHT_SWITCH_DIR:-/usr/share/xfce-night-switch}"
-SWITCHER_CONFIG="$HOME/.config/theme-switcher/config"
-CHECK_STAMP="$HOME/.cache/theme-switcher/last-update-check"
+SWITCHER_CONFIG="$HOME/.config/xfce-night-switch/config"
+CHECK_STAMP="$HOME/.cache/xfce-night-switch/last-update-check"
 REPO="prostopasta/xfce-night-switch"
 
 APP_LANG="en"
@@ -20,7 +20,7 @@ S_UPDATE_BTN_INSTALL="Install"
 S_UPDATE_BTN_LATER="Later"
 S_UPDATE_DONE="Updated to v%s successfully.\nRestart your session to apply changes."
 S_UPDATE_ERR="Update failed. Install manually:\n  sudo dpkg -i /tmp/xfce-night-switch.deb"
-_locale="${HOME}/.config/theme-switcher/locales/${APP_LANG:-en}.sh"
+_locale="${HOME}/.config/xfce-night-switch/locales/${APP_LANG:-en}.sh"
 [ ! -f "$_locale" ] && _locale="${SHARE}/locales/${APP_LANG:-en}.sh"
 # shellcheck source=/dev/null
 [ -f "$_locale" ] && source "$_locale"
