@@ -59,3 +59,23 @@ S_PANEL_HINT="Add manually: right-click panel → Panel → Add New Items → La
 S_RESTART="🔄  Restart panel"
 S_RESTART_DONE="Panel restarted."
 S_INSTALL_PANEL="🔧  Install to panel"
+
+S_TOOLTIP_DAY="Day mode (click to switch to night)"
+S_TOOLTIP_NIGHT="Night mode (click to switch to day)"
+
+S_THEMES="🎨  Themes"
+S_THEMES_TITLE="Theme Selection"
+S_THEMES_DAY_HDR="── Day ────────────────────────────────"
+S_THEMES_NIGHT_HDR="── Night ──────────────────────────────"
+S_THEMES_GTK_DAY="GTK theme (day)"
+S_THEMES_TERM_DAY="Terminal profile (day)"
+S_THEMES_GTK_NIGHT="GTK theme (night)"
+S_THEMES_TERM_NIGHT="Terminal profile (night)"
+S_THEMES_GET_MORE="More GTK themes: xfce-look.org / gnome-look.org  •  install to /usr/share/themes/ or ~/.themes/"
+
+S_PANEL="🖥  Panel launcher"
+S_PANEL_TITLE="Panel Launcher"
+S_PANEL_CHOOSE="Select which panel to install the launcher on:"
+S_PANEL_CLOCK="★ clock"
+S_PANEL_INSTALLED="✓ installed here"
+S_PANEL_DONE="Launcher installed on"

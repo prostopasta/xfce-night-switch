@@ -1,5 +1,5 @@
 #!/bin/bash
-# Theme Switcher Settings — графический диалог настроек.
+# Theme Switcher Settings — graphical settings dialog.
 
 export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
 export DISPLAY=:0
@@ -7,10 +7,13 @@ export DISPLAY=:0
 SWITCHER_CONFIG="$HOME/.config/theme-switcher/config"
 PANEL_LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-101"
 APP_DESKTOP="$HOME/.local/share/applications/toggle-theme.desktop"
+LIGHT_THEME="ZorinBlue-Light"
 DARK_THEME="Mint-Y-Dark-Aqua"
+TERM_PROFILE_LIGHT="AdventureTime"
+TERM_PROFILE_DARK="dark-Blitz"
 ICON_CACHE="$HOME/.cache/theme-switcher/icons"
 
-# Дефолты
+# Defaults
 ICON_DAY="weather-clear"
 ICON_NIGHT="$HOME/.local/share/icons/hicolor/scalable/apps/theme-moon.svg"
 AUTO_SWITCHER="enabled"
@@ -24,14 +27,16 @@ APP_LANG="en"
 
 LOCALES_DIR="$HOME/.config/theme-switcher/locales"
 
-# ── Строки интерфейса ──────────────────────────────────────────────────────
+# ── UI strings ──────────────────────────────────────────────────────────────
 _load_strings() {
     local locale_file="$LOCALES_DIR/${APP_LANG}.sh"
+    # Fall back to system-installed locales (deb package install path)
+    [ -f "$locale_file" ] || locale_file="${XFCE_NIGHT_SWITCH_DIR:-/usr/share/xfce-night-switch}/locales/${APP_LANG}.sh"
     if [ -f "$locale_file" ]; then
         source "$locale_file"
         return
     fi
-    # Встроенный fallback для en и ru если файлы ещё не созданы
+    # Built-in fallback for en/ru in case locale files are missing
     if [ "$APP_LANG" = "ru" ]; then
         S_APP_TITLE="Настройки переключателя тем"
         S_APP_TEXT="<b>Theme Switcher</b> — выберите настройку:"
@@ -130,13 +135,13 @@ _load_strings() {
 }
 _load_strings
 
-# ── Рестарт панели ──────────────────────────────────────────────────────────
+# ── Panel restart ───────────────────────────────────────────────────────────
 _restart_panel() {
     DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
         DISPLAY=:0 xfce4-panel --restart 2>/dev/null &
 }
 
-# ── Автоопределение размера панели ──────────────────────────────────────────
+# ── Auto-detect panel size ──────────────────────────────────────────────────
 _get_panel_size() {
     local dbus="unix:path=/run/user/$(id -u)/bus"
     for panel in $(DBUS_SESSION_BUS_ADDRESS=$dbus \
@@ -164,7 +169,7 @@ _get_fg_color() {
 FG_COLOR=$(_get_fg_color)
 mkdir -p "$ICON_CACHE"
 
-# ── Рендер иконки ───────────────────────────────────────────────────────────
+# ── Icon rendering ──────────────────────────────────────────────────────────
 render_icon() {
     local src=$1
     if [[ "$src" != /* ]]; then
@@ -211,7 +216,7 @@ render_icon() {
     echo "$cached"
 }
 
-# ── Сканирование иконок ─────────────────────────────────────────────────────
+# ── Icon scanning ───────────────────────────────────────────────────────────
 scan_icons() {
     local pattern=$1 exclude=$2
     python3 - "$pattern" "$exclude" << 'PYEOF'
@@ -262,7 +267,16 @@ icon_label() {
     echo "${theme}  •  ${file}"
 }
 
-# ── Обновление .desktop ─────────────────────────────────────────────────────
+# Re-apply the scheduled theme immediately after any settings change.
+# Clears manual_override so the new settings take full effect.
+_reapply_theme() {
+    source "$SWITCHER_CONFIG"
+    [ "$AUTO_SWITCHER" = "enabled" ] || return
+    rm -f "$HOME/.config/theme-switcher/manual_override"
+    "${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/auto-theme.sh"
+}
+
+# ── .desktop file update ────────────────────────────────────────────────────
 update_field() {
     local file=$1 field=$2 value=$3
     [ -f "$file" ] && [ -s "$file" ] || return
@@ -293,8 +307,8 @@ apply_icon_now() {
     { ! $is_dark && [ "$kind" = "day" ]; }  && should_apply=true
     if $should_apply; then
         local tooltip
-        $is_dark && tooltip="Ночной режим (нажми чтобы переключить на день)" \
-                 || tooltip="Дневной режим (нажми чтобы переключить на ночь)"
+        $is_dark && tooltip="${S_TOOLTIP_NIGHT:-Night mode (click to switch to day)}" \
+                 || tooltip="${S_TOOLTIP_DAY:-Day mode (click to switch to night)}"
         for f in "$PANEL_LAUNCHER_DIR"/*.desktop; do
             [ -f "$f" ] || continue
             grep -q "toggle-theme\|Toggle Theme" "$f" 2>/dev/null || continue
@@ -306,7 +320,7 @@ apply_icon_now() {
     fi
 }
 
-# ── Диалог выбора иконки ────────────────────────────────────────────────────
+# ── Icon picker dialog ──────────────────────────────────────────────────────
 show_icon_picker() {
     local title=$1 kind=$2 current=$3
     local pattern exclude
@@ -353,7 +367,7 @@ show_icon_picker() {
     source "$SWITCHER_CONFIG"
 }
 
-# ── Геокодинг ───────────────────────────────────────────────────────────────
+# ── Geocoding ───────────────────────────────────────────────────────────────
 _reverse_geocode() {
     local lat=$1 lon=$2
     curl -s --max-time 5 -A "theme-switcher/1.0" \
@@ -388,7 +402,9 @@ _search_city_dialog() {
     done < <(python3 -c "
 import sys, json
 for item in json.load(sys.stdin):
-    print(item['display_name'][:90] + '\t' + item['lat'] + ' ' + item['lon'])
+    kind = item.get('addresstype') or item.get('type') or item.get('class') or ''
+    label = (item['display_name'][:75] + '  [' + kind + ']') if kind else item['display_name'][:90]
+    print(label + '\t' + item['lat'] + ',' + item['lon'])
 " <<< "$json")
     if [ ${#rows[@]} -eq 0 ]; then
         yad --error --text="$S_CITY_PARSE_ERR" --width=300 2>/dev/null; return
@@ -404,7 +420,8 @@ for item in json.load(sys.stdin):
     echo "$selected" > /tmp/theme-switcher-loc.tmp
 }
 
-# ── Диалог авто-переключателя ───────────────────────────────────────────────
+
+# ── Auto-switcher dialog ────────────────────────────────────────────────────
 show_auto_dialog() {
     source "$SWITCHER_CONFIG"; _load_strings
     local lat="${LATITUDE:-}" lon="${LONGITUDE:-}"
@@ -429,31 +446,37 @@ show_auto_dialog() {
     result=$(yad \
         --title="$S_AUTO_TITLE" --width=460 --height=380 \
         --form --separator="|" \
-        --field="${S_AUTO_ENABLE}:CHK"    "$enabled_val" \
-        --field="":LBL                    "" \
-        --field="${S_AUTO_MODE}:CB"        "$mode_cb" \
-        --field="":LBL                    "" \
-        --field="${S_AUTO_TIME_HDR}:LBL"  "" \
-        --field="${S_DAY_FROM}"           "${DAY_START:-07:00}" \
-        --field="${S_DAY_TO}"             "${DAY_END:-18:00}" \
-        --field="":LBL                    "" \
-        --field="${S_AUTO_LOC_HDR}:LBL"  "" \
-        --field="${S_LAT}"               "${lat}" \
-        --field="${S_LON}"               "${lon}" \
-        --field="${S_CUR_CITY}:LBL"      "${city_label}${sun_preview}" \
+        --field="${S_AUTO_ENABLE}:CHK" \
+        --field="":LBL \
+        --field="${S_AUTO_MODE}:CB" \
+        --field="":LBL \
+        --field="${S_AUTO_TIME_HDR}:LBL" \
+        --field="${S_DAY_FROM}" \
+        --field="${S_DAY_TO}" \
+        --field="":LBL \
+        --field="${S_AUTO_LOC_HDR}:LBL" \
+        --field="${S_LAT}" \
+        --field="${S_LON}" \
+        --field="":LBL \
+        --field="📍 ${S_CUR_CITY}:LBL" \
         --button="${S_BTN_FIND}!system-search:3" \
         --button="${S_BTN_MAP}!web-browser:4" \
         --button="${S_BTN_IP}!find-location:5" \
         --button="gtk-ok:0" --button="gtk-cancel:1" \
+        -- \
+        "$enabled_val" "" "$mode_cb" "" "" \
+        "${DAY_START:-07:00}" "${DAY_END:-18:00}" \
+        "" "" "${lat}" "${lon}" "" "${city_label}${sun_preview}" \
         2>/dev/null)
     local rc=$?
     case $rc in
         3)
             _search_city_dialog
             if [ -f /tmp/theme-switcher-loc.tmp ]; then
-                read -r lat lon < /tmp/theme-switcher-loc.tmp
+                IFS=',' read -r lat lon < /tmp/theme-switcher-loc.tmp
                 rm -f /tmp/theme-switcher-loc.tmp
                 _cfg_set "LATITUDE" "$lat"; _cfg_set "LONGITUDE" "$lon"
+                _reapply_theme &
             fi
             show_auto_dialog; return ;;
         4)
@@ -467,15 +490,16 @@ show_auto_dialog() {
             if [ -n "$loc" ]; then
                 lat=$(echo "$loc"|cut -d' ' -f1); lon=$(echo "$loc"|cut -d' ' -f2)
                 _cfg_set "LATITUDE" "$lat"; _cfg_set "LONGITUDE" "$lon"
+                _reapply_theme &
             else
                 yad --error --text="$S_IP_ERROR" --width=340 2>/dev/null &
             fi
             show_auto_dialog; return ;;
         1|252) return ;;
     esac
-    IFS="|" read -r v_enabled _ v_mode _ _ v_start v_end _ _ v_lat v_lon _ <<< "$result"
+    IFS="|" read -r v_enabled _ v_mode _ _ v_start v_end _ _ v_lat v_lon _ _ <<< "$result"
     local new_enabled="disabled"; [ "$v_enabled" = "TRUE" ] && new_enabled="enabled"
-    # Определяем mode по первому варианту в combobox
+    # Determine mode from first combobox option
     local first_opt; IFS='!' read -r first_opt _ <<< "$S_AUTO_MODE_OPTS"
     local new_mode="time"; [ "$v_mode" != "$first_opt" ] && new_mode="location"
     _cfg_set "AUTO_SWITCHER" "$new_enabled"; _cfg_set "AUTO_MODE" "$new_mode"
@@ -488,24 +512,22 @@ show_auto_dialog() {
     else
         crontab -l 2>/dev/null | grep -v 'auto-theme.sh' | crontab -
     fi
-    [ "$new_enabled" = "enabled" ] && \
-        DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" DISPLAY=:0 \
-        bash "$HOME/.local/bin/auto-theme.sh" &
+    _reapply_theme
     local msg; msg=$(printf "$S_AUTO_ENABLED" "$new_mode")
     [ "$new_enabled" != "enabled" ] && msg="$S_AUTO_DISABLED"
     yad --info --text="$msg" --timeout=2 --no-buttons --width=340 2>/dev/null &
 }
 
-# ── Диалог выбора языка ─────────────────────────────────────────────────────
+# ── Language picker dialog ──────────────────────────────────────────────────
 show_lang_dialog() {
     source "$SWITCHER_CONFIG"; _load_strings
 
-    # Собираем все доступные локали из файлов
+    # Collect available locales from locale files
     local rows=() code label
     for f in "$LOCALES_DIR"/*.sh; do
         [ -f "$f" ] || continue
         code=$(basename "$f" .sh)
-        # Читаем S_LANG_VALUE из файла локали
+        # Read S_LANG_VALUE from locale file
         label=$(grep '^S_LANG_VALUE=' "$f" | head -1 | cut -d'"' -f2)
         [ -z "$label" ] && label="$code"
         local mark=""
@@ -528,7 +550,7 @@ show_lang_dialog() {
     local rc=$?
 
     if [ $rc -eq 3 ]; then
-        # Добавить свой язык — открываем en.sh как шаблон в текстовом редакторе
+        # Add custom language — open en.sh as template in default editor
         local new_code
         new_code=$(yad --entry \
             --title="New locale" \
@@ -557,7 +579,7 @@ show_lang_dialog() {
     APP_LANG="$selected"
     _load_strings
 
-    # Обновляем Name= в .desktop файлах при смене языка
+    # Update Name= in .desktop files on language change
     local current_theme is_dark=false
     current_theme=$(gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null | tr -d "'")
     [ "$current_theme" = "$DARK_THEME" ] && is_dark=true
@@ -583,11 +605,162 @@ show_lang_dialog() {
         [ -s "$tmp" ] && cat "$tmp" > "$f"; rm -f "$tmp"
     done
 
-    # Перезапускаем панель чтобы она подхватила новые Name=
+    # Restart panel so it picks up new Name= values
     _restart_panel
 }
 
-# ── Главный диалог ──────────────────────────────────────────────────────────
+# ── Theme selection dialog ───────────────────────────────────────────────────
+
+# Build a yad combobox option string with the current value selected first.
+_mkcb() {
+    local cur=$1; shift
+    local cb="$cur"
+    for x in "$@"; do [ "$x" != "$cur" ] && cb="${cb}!${x}"; done
+    echo "$cb"
+}
+
+show_themes_dialog() {
+    source "$SWITCHER_CONFIG"; _load_strings
+
+    local cur_light="${LIGHT_THEME:-ZorinBlue-Light}"
+    local cur_dark="${DARK_THEME:-Mint-Y-Dark-Aqua}"
+    local cur_tlight="${TERM_PROFILE_LIGHT:-AdventureTime}"
+    local cur_tdark="${TERM_PROFILE_DARK:-dark-Blitz}"
+
+    # List installed GTK themes (require gtk-2.0 / gtk-3.0 / gtk-4.0 subdir)
+    local gtk_themes=()
+    while IFS= read -r t; do
+        [ -n "$t" ] && gtk_themes+=("$t")
+    done < <(
+        { for dir in /usr/share/themes "$HOME/.themes"; do
+            [ -d "$dir" ] || continue
+            for d in "$dir"/*/; do
+                { [ -d "${d}gtk-2.0" ] || [ -d "${d}gtk-3.0" ] || [ -d "${d}gtk-4.0" ]; } \
+                    && basename "$d"
+            done
+        done; } | sort -u
+    )
+
+    # List Terminator profiles from config
+    local term_profiles=()
+    while IFS= read -r p; do
+        [ -n "$p" ] && term_profiles+=("$p")
+    done < <(python3 -c "
+import re, os
+cfg = os.path.expanduser('~/.config/terminator/config')
+if not os.path.exists(cfg): raise SystemExit
+content = open(cfg).read()
+in_profiles = False
+for line in content.splitlines():
+    s = line.strip()
+    if s == '[profiles]': in_profiles = True
+    elif s.startswith('[') and not s.startswith('[['): in_profiles = False
+    elif in_profiles:
+        m = re.match(r'\[\[(.+)\]\]', s)
+        if m: print(m.group(1))
+" 2>/dev/null)
+
+    local cb_day_gtk;    cb_day_gtk=$(   _mkcb "$cur_light"  "${gtk_themes[@]}")
+    local cb_night_gtk;  cb_night_gtk=$( _mkcb "$cur_dark"   "${gtk_themes[@]}")
+    local cb_day_term;   cb_day_term=$(  _mkcb "$cur_tlight" "${term_profiles[@]}")
+    local cb_night_term; cb_night_term=$(_mkcb "$cur_tdark"  "${term_profiles[@]}")
+
+    local result
+    result=$(yad \
+        --title="${S_THEMES_TITLE:-Theme Selection}" \
+        --width=500 --height=320 \
+        --form --separator="|" \
+        --field="${S_THEMES_DAY_HDR:-── Day ──────────────────────────────────}:LBL" \
+        --field="${S_THEMES_GTK_DAY:-GTK theme (day)}:CB" \
+        --field="${S_THEMES_TERM_DAY:-Terminal profile (day)}:CB" \
+        --field="":LBL \
+        --field="${S_THEMES_NIGHT_HDR:-── Night ────────────────────────────────}:LBL" \
+        --field="${S_THEMES_GTK_NIGHT:-GTK theme (night)}:CB" \
+        --field="${S_THEMES_TERM_NIGHT:-Terminal profile (night)}:CB" \
+        --button="gtk-ok:0" --button="gtk-cancel:1" \
+        -- \
+        "" "$cb_day_gtk" "$cb_day_term" \
+        "" "" "$cb_night_gtk" "$cb_night_term" \
+        2>/dev/null)
+    [ $? -ne 0 ] && return
+
+    local v_day_gtk v_day_term v_night_gtk v_night_term
+    IFS="|" read -r _ v_day_gtk v_day_term _ _ v_night_gtk v_night_term <<< "$result"
+
+    [ -n "$v_day_gtk" ]    && _cfg_set "LIGHT_THEME"        "$v_day_gtk"
+    [ -n "$v_night_gtk" ]  && _cfg_set "DARK_THEME"         "$v_night_gtk"
+    [ -n "$v_day_term" ]   && _cfg_set "TERM_PROFILE_LIGHT" "$v_day_term"
+    [ -n "$v_night_term" ] && _cfg_set "TERM_PROFILE_DARK"  "$v_night_term"
+
+    source "$SWITCHER_CONFIG"
+}
+
+# ── Panel launcher dialog ────────────────────────────────────────────────────
+show_panel_dialog() {
+    source "$SWITCHER_CONFIG"; _load_strings
+
+    local current_panel="${XFCE_LAUNCHER_PANELS:-}"
+    local current_id="${XFCE_PLUGIN_ID:-}"
+
+    # Build annotated panel list from xfconf
+    declare -A panel_annot
+    local all_panels=()
+    for pp in $(DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+                xfconf-query -c xfce4-panel -l 2>/dev/null \
+                | grep -oE '/panels/panel-[0-9]+/plugin-ids' \
+                | sed 's|/plugin-ids||' | sort); do
+        local pname="${pp##*/panels/}"
+        all_panels+=("$pname")
+        local annot="" pids
+        pids=$(DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+               xfconf-query -c xfce4-panel -p "${pp}/plugin-ids" 2>/dev/null)
+        while IFS= read -r pid; do
+            pid=$(echo "$pid" | tr -d ' \r')
+            [[ "$pid" =~ ^[0-9]+$ ]] || continue
+            local ptype
+            ptype=$(DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+                    xfconf-query -c xfce4-panel -p "/plugins/plugin-${pid}" 2>/dev/null || true)
+            [[ "$ptype" == "datetime" || "$ptype" == "clock" ]] \
+                && annot="${annot}  ${S_PANEL_CLOCK:-★ clock}"
+            [ -n "$current_id" ] && [ "$pid" = "$current_id" ] \
+                && annot="${annot}  ${S_PANEL_INSTALLED:-✓ installed here}"
+        done <<< "$pids"
+        panel_annot["$pname"]="${pname}${annot}"
+    done
+
+    if [ ${#all_panels[@]} -eq 0 ]; then
+        yad --error --text="No XFCE panels found." --width=300 2>/dev/null; return
+    fi
+
+    # Currently-installed panel first so yad pre-selects it
+    local ordered=()
+    [ -n "$current_panel" ] && ordered+=("$current_panel")
+    for p in "${all_panels[@]}"; do [ "$p" != "$current_panel" ] && ordered+=("$p"); done
+
+    local rows=()
+    for p in "${ordered[@]}"; do rows+=("$p" "${panel_annot[$p]:-$p}"); done
+
+    local selected
+    selected=$(yad \
+        --title="${S_PANEL_TITLE:-Panel Launcher}" --width=440 --height=280 \
+        --list --column=":HD" --column="${S_COL_SETTING:-Panel}" \
+        --print-column=1 --no-headers \
+        --text="${S_PANEL_CHOOSE:-Select panel to install the launcher on:}" \
+        "${rows[@]}" \
+        --button="gtk-ok:0" --button="gtk-cancel:1" \
+        2>/dev/null)
+    selected="${selected%|}"
+    [ -z "$selected" ] && return
+
+    XFCE_TARGET_PANEL="$selected" \
+        bash "${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/install-panel-launcher.sh"
+    source "$SWITCHER_CONFIG"
+    yad --info \
+        --text="${S_PANEL_DONE:-Launcher installed on} <b>${selected}</b>" \
+        --timeout=2 --no-buttons --width=320 2>/dev/null &
+}
+
+# ── Main dialog ─────────────────────────────────────────────────────────────
 show_main_dialog() {
     source "$SWITCHER_CONFIG"; _load_strings
     local auto_label
@@ -605,33 +778,30 @@ show_main_dialog() {
         --column="$S_COL_SETTING" --column="$S_COL_VALUE" --column=":HD" \
         --no-headers --print-column=3 \
         --text="$S_APP_TEXT" \
-        "$S_NIGHT_ICON"    "$(icon_label "$ICON_NIGHT")"  "night" \
-        "$S_DAY_ICON"      "$(icon_label "$ICON_DAY")"    "day" \
-        "$S_AUTO"          "$auto_label"                  "auto" \
-        "$S_LANG"          "$S_LANG_VALUE"                "lang" \
-        "${S_RESTART:-🔄  Restart panel}"   ""            "restart" \
-        "${S_INSTALL_PANEL:-🔧  Install to panel}"  ""   "install" \
+        "$S_NIGHT_ICON"    "$(icon_label "$ICON_NIGHT")"                          "night" \
+        "$S_DAY_ICON"      "$(icon_label "$ICON_DAY")"                            "day" \
+        "${S_THEMES:-🎨  Themes}"  "${LIGHT_THEME:-?} / ${DARK_THEME:-?}"        "themes" \
+        "${S_PANEL:-🖥  Panel launcher}"  "${XFCE_LAUNCHER_PANELS:-?} (plugin-${XFCE_PLUGIN_ID:-?})"  "panel" \
+        "$S_AUTO"          "$auto_label"                                          "auto" \
+        "$S_LANG"          "$S_LANG_VALUE"                                        "lang" \
+        "${S_RESTART:-🔄  Restart panel}"  ""                                     "restart" \
         2>/dev/null)
     action="${action%|}"
+    local settings_changed=false
     case "$action" in
-        night)   show_icon_picker "$S_PICKER_NIGHT" "night" "$ICON_NIGHT" ;;
-        day)     show_icon_picker "$S_PICKER_DAY"   "day"   "$ICON_DAY"   ;;
-        auto)    show_auto_dialog ;;
+        night)   show_icon_picker "$S_PICKER_NIGHT" "night" "$ICON_NIGHT"; settings_changed=true ;;
+        day)     show_icon_picker "$S_PICKER_DAY"   "day"   "$ICON_DAY";   settings_changed=true ;;
+        themes)  show_themes_dialog;                                        settings_changed=true ;;
+        panel)   show_panel_dialog ;;
+        auto)    show_auto_dialog;                                          settings_changed=true ;;
         lang)    show_lang_dialog ;;
         restart)
             _restart_panel
-            yad --info \
-                --text="${S_RESTART_DONE:-Panel restarted.}" \
+            yad --info --text="${S_RESTART_DONE:-Panel restarted.}" \
                 --timeout=2 --no-buttons --width=280 2>/dev/null &
             ;;
-        install)
-            bash "$HOME/.local/bin/install-panel-launcher.sh" && \
-            _restart_panel && \
-            yad --info \
-                --text="${S_PANEL_DONE:-Launcher installed.}" \
-                --timeout=2 --no-buttons --width=300 2>/dev/null &
-            ;;
     esac
+    $settings_changed && _reapply_theme
 }
 
 show_main_dialog

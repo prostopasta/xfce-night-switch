@@ -1,0 +1,108 @@
+#!/bin/bash
+set -e
+
+_cleanup_user() {
+    local user=$1
+    local home
+    home=$(getent passwd "$user" | cut -d: -f6)
+    [ -d "$home" ] || return 0
+
+    # Remove ~/.local/bin symlinks that point to our package
+    for f in auto-theme.sh toggle-theme.sh theme-settings.sh sunrise-sunset.py install-panel-launcher.sh; do
+        local link="$home/.local/bin/$f"
+        if [ -L "$link" ]; then
+            local target
+            target=$(readlink "$link")
+            [[ "$target" == /usr/share/xfce-night-switch/* ]] && rm -f "$link"
+        fi
+    done
+
+    # Remove user-level desktop files we installed
+    rm -f "$home/.local/share/applications/toggle-theme.desktop"
+    rm -f "$home/.local/share/applications/theme-settings.desktop"
+
+    # Remove cron entry
+    if crontab -l -u "$user" 2>/dev/null | grep -q 'auto-theme.sh'; then
+        crontab -l -u "$user" 2>/dev/null | grep -v 'auto-theme.sh' | crontab -u "$user" - 2>/dev/null || true
+    fi
+
+    # Disable systemd startup service
+    su - "$user" -c "systemctl --user disable --now auto-theme-startup.service 2>/dev/null || true" 2>/dev/null || true
+
+    # Remove XFCE panel launcher — read saved plugin ID and panel from config
+    local cfg="$home/.config/theme-switcher/config"
+    local plugin_id panels
+    plugin_id=$(grep '^XFCE_PLUGIN_ID='       "$cfg" 2>/dev/null | cut -d'"' -f2)
+    panels=$(   grep '^XFCE_LAUNCHER_PANELS=' "$cfg" 2>/dev/null | cut -d'"' -f2)
+    # Fallback if config was missing
+    plugin_id="${plugin_id:-101}"
+
+    rm -rf "$home/.config/xfce4/panel/launcher-${plugin_id}"
+
+    local tmp_rm
+    tmp_rm=$(mktemp /tmp/xns-panel-rm-XXXXXX.sh)
+    cat > "$tmp_rm" << PANEL_RM_EOF
+#!/bin/bash
+export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/\$(id -u)/bus"
+export DISPLAY=:0
+PLUGIN_ID="${plugin_id}"
+SAVED_PANELS="${panels}"
+# Use saved panel list; fall back to full scan
+if [ -n "\$SAVED_PANELS" ]; then
+    panel_list=\$SAVED_PANELS
+else
+    panel_list=\$(xfconf-query -c xfce4-panel -l 2>/dev/null \
+                  | grep -oE '/panels/panel-[0-9]+/plugin-ids' \
+                  | sed 's|/plugin-ids||' | sed 's|.*/panels/||')
+fi
+for panel_name in \$panel_list; do
+    panel_path="/panels/\${panel_name}"
+    raw=\$(xfconf-query -c xfce4-panel -p "\${panel_path}/plugin-ids" 2>/dev/null) || continue
+    ids=()
+    while IFS= read -r id; do
+        id=\$(echo "\$id" | tr -d ' \r')
+        [[ "\$id" =~ ^[0-9]+$ ]] || continue
+        [ "\$id" = "\$PLUGIN_ID" ] || ids+=(-t int -s "\$id")
+    done <<< "\$raw"
+    [ \${#ids[@]} -gt 0 ] \
+        && xfconf-query -c xfce4-panel -p "\${panel_path}/plugin-ids" \
+               --force-array "\${ids[@]}" 2>/dev/null || true
+done
+xfconf-query -c xfce4-panel -p /plugins/plugin-\${PLUGIN_ID} -r -R 2>/dev/null || true
+xfce4-panel --restart 2>/dev/null &
+PANEL_RM_EOF
+    chmod 755 "$tmp_rm"
+    su - "$user" -c "bash $tmp_rm" 2>/dev/null || true
+    rm -f "$tmp_rm"
+}
+
+_purge_user_config() {
+    local user=$1
+    local home
+    home=$(getent passwd "$user" | cut -d: -f6)
+    [ -d "$home" ] || return 0
+    rm -rf "$home/.config/theme-switcher"
+    rm -rf "$home/.cache/theme-switcher"
+    rm -f "$home/.local/share/icons/hicolor/scalable/apps/theme-moon.svg"
+    gtk-update-icon-cache -f "$home/.local/share/icons/hicolor/" 2>/dev/null || true
+}
+
+INSTALL_USER="${SUDO_USER:-}"
+
+case "$1" in
+    remove|purge)
+        if [ -n "$INSTALL_USER" ] && id "$INSTALL_USER" >/dev/null 2>&1; then
+            _cleanup_user "$INSTALL_USER"
+        fi
+        update-desktop-database /usr/share/applications/ 2>/dev/null || true
+        gtk-update-icon-cache -f /usr/share/icons/hicolor/ 2>/dev/null || true
+        ;;
+esac
+
+case "$1" in
+    purge)
+        if [ -n "$INSTALL_USER" ] && id "$INSTALL_USER" >/dev/null 2>&1; then
+            _purge_user_config "$INSTALL_USER"
+        fi
+        ;;
+esac
