@@ -789,13 +789,12 @@ show_main_dialog() {
         "${S_RESTART:-🔄  Restart panel}"  ""                                     "restart" \
         2>/dev/null)
     action="${action%|}"
-    local settings_changed=false
     case "$action" in
-        night)   show_icon_picker "$S_PICKER_NIGHT" "night" "$ICON_NIGHT"; settings_changed=true ;;
-        day)     show_icon_picker "$S_PICKER_DAY"   "day"   "$ICON_DAY";   settings_changed=true ;;
-        themes)  show_themes_dialog;                                        settings_changed=true ;;
-        panel)   show_panel_dialog ;;
-        auto)    show_auto_dialog;                                          settings_changed=true ;;
+        night)   show_icon_picker "$S_PICKER_NIGHT" "night" "$ICON_NIGHT" ;;
+        day)     show_icon_picker "$S_PICKER_DAY"   "day"   "$ICON_DAY"   ;;
+        themes)  show_themes_dialog; _reapply_theme ;;
+        panel)   show_panel_dialog; show_main_dialog; return ;;
+        auto)    show_auto_dialog ;;
         lang)    show_lang_dialog ;;
         restart)
             _restart_panel
@@ -803,7 +802,6 @@ show_main_dialog() {
                 --timeout=2 --no-buttons --width=280 2>/dev/null &
             ;;
     esac
-    $settings_changed && _reapply_theme
 }
 
 show_main_dialog
