@@ -71,6 +71,13 @@ S_THEMES_GTK_NIGHT="GTK тема (ночь)"
 S_THEMES_TERM_NIGHT="Профиль терминала (ночь)"
 S_THEMES_GET_MORE="Больше GTK тем: xfce-look.org / gnome-look.org  •  устанавливать в /usr/share/themes/ или ~/.themes/"
 
+S_UPDATE_TITLE="Обновление xfce-night-switch"
+S_UPDATE_TEXT="Доступна новая версия <b>v%s</b> (текущая: v%s).\n\nУстановить сейчас?"
+S_UPDATE_BTN_INSTALL="Установить"
+S_UPDATE_BTN_LATER="Позже"
+S_UPDATE_DONE="Обновлено до v%s.\nПерезапустите сессию для применения изменений."
+S_UPDATE_ERR="Обновление не удалось. Установите вручную:\n  sudo dpkg -i /tmp/xfce-night-switch.deb"
+
 S_PANEL="🖥️  Панель"
 S_PANEL_TITLE="Launcher на панель"
 S_PANEL_CHOOSE="Выберите панель для установки launcher:"
