@@ -5,11 +5,11 @@
 export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
 export DISPLAY=:0
 
-SWITCHER_CONFIG="$HOME/.config/theme-switcher/config"
+SWITCHER_CONFIG="$HOME/.config/xfce-night-switch/config"
 
 APP_LANG="en"
 [ -f "$SWITCHER_CONFIG" ] && source "$SWITCHER_CONFIG"
-LOCALE_FILE="$HOME/.config/theme-switcher/locales/${APP_LANG}.sh"
+LOCALE_FILE="$HOME/.config/xfce-night-switch/locales/${APP_LANG}.sh"
 [ -f "$LOCALE_FILE" ] || LOCALE_FILE="${XFCE_NIGHT_SWITCH_DIR:-/usr/share/xfce-night-switch}/locales/${APP_LANG}.sh"
 [ -f "$LOCALE_FILE" ] && source "$LOCALE_FILE"
 
@@ -133,6 +133,32 @@ fi
 PLUGIN_ID=$(_get_plugin_id)
 LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-${PLUGIN_ID}"
 
+# Decide whether to (re)start xfce4-panel:
+#   - fresh install (plugin not in xfconf)   → full restart required to load plugin
+#   - upgrade, same panel, panel running     → skip, nothing changed
+#   - upgrade, same panel, panel dead        → start without pkill
+#   - upgrade, panel changed                 → restart so new layout is applied
+_existing_type=$(xfconf-query -c xfce4-panel \
+    -p "/plugins/plugin-${PLUGIN_ID}" 2>/dev/null || true)
+_panel_running=false
+pgrep -x xfce4-panel > /dev/null 2>&1 && _panel_running=true
+_NEED_PANEL_RESTART=true
+_NEED_PANEL_START=false
+if [ "$_existing_type" = "launcher" ]; then
+    _saved_panel=$(grep '^XFCE_LAUNCHER_PANELS=' "$SWITCHER_CONFIG" 2>/dev/null \
+                   | cut -d'"' -f2 | tr -s ' ' '\n' | head -1)
+    if [ "${_saved_panel:-}" = "$TARGET_PANEL" ]; then
+        # Same panel — layout unchanged, no restart needed
+        if $_panel_running; then
+            _NEED_PANEL_RESTART=false
+        else
+            _NEED_PANEL_RESTART=false   # panel dead — just start it
+            _NEED_PANEL_START=true
+        fi
+    fi
+    # Different panel → keep _NEED_PANEL_RESTART=true so xfce4-panel reloads layout
+fi
+
 echo "Primary panel : $TARGET_PANEL"
 echo "Plugin ID     : $PLUGIN_ID"
 
@@ -239,9 +265,18 @@ if [ -f "$SWITCHER_CONFIG" ]; then
 fi
 
 echo "OK: plugin-${PLUGIN_ID} / launcher-${PLUGIN_ID} installed on ${TARGET_PANEL}"
-# Kill panel → modify xfconf is already done → start fresh from xfconf.
-# We intentionally avoid --restart because it saves in-memory state first,
-# which would overwrite the xfconf changes we just made.
-pkill -x xfce4-panel 2>/dev/null || true
-sleep 0.4
-xfce4-panel 2>/dev/null &
+if $_NEED_PANEL_RESTART; then
+    # Fresh install: kill panel and restart so it picks up the new plugin from xfconf.
+    # Avoid --restart: it saves in-memory state first, overwriting our xfconf changes.
+    pkill -x xfce4-panel 2>/dev/null || true
+    sleep 0.4
+    DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+        DISPLAY=:0 xfce4-panel 2>/dev/null &
+elif $_NEED_PANEL_START; then
+    # Upgrade but panel was dead — start it without killing (nothing to kill).
+    echo "  panel was not running — starting xfce4-panel"
+    DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+        DISPLAY=:0 xfce4-panel 2>/dev/null &
+else
+    echo "  plugin already registered, panel running — restart skipped (upgrade)"
+fi

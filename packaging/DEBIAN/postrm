@@ -30,7 +30,7 @@ _cleanup_user() {
     su - "$user" -c "systemctl --user disable --now xfce-night-switch-startup.service 2>/dev/null || true" 2>/dev/null || true
 
     # Remove XFCE panel launcher — read saved plugin ID and panel from config
-    local cfg="$home/.config/theme-switcher/config"
+    local cfg="$home/.config/xfce-night-switch/config"
     local plugin_id panels
     plugin_id=$(grep '^XFCE_PLUGIN_ID='       "$cfg" 2>/dev/null | cut -d'"' -f2)
     panels=$(   grep '^XFCE_LAUNCHER_PANELS=' "$cfg" 2>/dev/null | cut -d'"' -f2)
@@ -81,8 +81,8 @@ _purge_user_config() {
     local home
     home=$(getent passwd "$user" | cut -d: -f6)
     [ -d "$home" ] || return 0
-    rm -rf "$home/.config/theme-switcher"
-    rm -rf "$home/.cache/theme-switcher"
+    rm -rf "$home/.config/xfce-night-switch"
+    rm -rf "$home/.cache/xfce-night-switch"
     rm -f "$home/.local/share/icons/hicolor/scalable/apps/theme-moon.svg"
     gtk-update-icon-cache -f "$home/.local/share/icons/hicolor/" 2>/dev/null || true
 }

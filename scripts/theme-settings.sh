@@ -4,9 +4,9 @@
 export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
 export DISPLAY=:0
 
-SWITCHER_CONFIG="$HOME/.config/theme-switcher/config"
+SWITCHER_CONFIG="$HOME/.config/xfce-night-switch/config"
 APP_DESKTOP="$HOME/.local/share/applications/toggle-theme.desktop"
-ICON_CACHE="$HOME/.cache/theme-switcher/icons"
+ICON_CACHE="$HOME/.cache/xfce-night-switch/icons"
 
 # Defaults
 LIGHT_THEME="Adwaita"
@@ -27,7 +27,7 @@ APP_LANG="en"
 # Set after source so XFCE_PLUGIN_ID from config is available
 PANEL_LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-${XFCE_PLUGIN_ID:-101}"
 
-LOCALES_DIR="$HOME/.config/theme-switcher/locales"
+LOCALES_DIR="$HOME/.config/xfce-night-switch/locales"
 
 # ── UI strings ──────────────────────────────────────────────────────────────
 _load_strings() {
@@ -276,7 +276,7 @@ icon_label() {
 _reapply_theme() {
     source "$SWITCHER_CONFIG"
     [ "$AUTO_SWITCHER" = "enabled" ] || return
-    rm -f "$HOME/.config/theme-switcher/manual_override"
+    rm -f "$HOME/.config/xfce-night-switch/manual_override"
     "${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/auto-theme.sh"
 }
 
@@ -374,7 +374,7 @@ show_icon_picker() {
 # ── Geocoding ───────────────────────────────────────────────────────────────
 _reverse_geocode() {
     local lat=$1 lon=$2
-    curl -s --max-time 5 -A "theme-switcher/1.0" \
+    curl -s --max-time 5 -A "xfce-night-switch/1.0" \
         "https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10&accept-language=${APP_LANG}" \
     | python3 -c "
 import sys, json
@@ -395,7 +395,7 @@ _search_city_dialog() {
     encoded=$(python3 -c "import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1]))" "$query" 2>/dev/null)
     [ -z "$encoded" ] && encoded="$query"
     url="https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=10&addressdetails=1&accept-language=${APP_LANG}"
-    json=$(curl -s --max-time 8 -A "theme-switcher/1.0" "$url" 2>/dev/null)
+    json=$(curl -s --max-time 8 -A "xfce-night-switch/1.0" "$url" 2>/dev/null)
     if [ -z "$json" ] || [ "$json" = "[]" ]; then
         local msg; msg=$(printf "$S_CITY_NOT_FOUND" "$query")
         yad --error --text="$msg" --width=340 2>/dev/null; return
@@ -421,7 +421,7 @@ for item in json.load(sys.stdin):
         --print-column=2 --no-headers --text="$results_text" \
         "${rows[@]}" 2>/dev/null)
     selected="${selected%|}"; [ -z "$selected" ] && return
-    echo "$selected" > /tmp/theme-switcher-loc.tmp
+    echo "$selected" > /tmp/xfce-night-switch-loc.tmp
 }
 
 
@@ -476,9 +476,9 @@ show_auto_dialog() {
     case $rc in
         3)
             _search_city_dialog
-            if [ -f /tmp/theme-switcher-loc.tmp ]; then
-                IFS=',' read -r lat lon < /tmp/theme-switcher-loc.tmp
-                rm -f /tmp/theme-switcher-loc.tmp
+            if [ -f /tmp/xfce-night-switch-loc.tmp ]; then
+                IFS=',' read -r lat lon < /tmp/xfce-night-switch-loc.tmp
+                rm -f /tmp/xfce-night-switch-loc.tmp
                 _cfg_set "LATITUDE" "$lat"; _cfg_set "LONGITUDE" "$lon"
                 _reapply_theme &
             fi

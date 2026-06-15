@@ -12,8 +12,8 @@ TERM_PROFILE_LIGHT="default"
 TERM_PROFILE_DARK="default"
 TERM_CONFIG="$HOME/.config/terminator/config"
 APP_DESKTOP="$HOME/.local/share/applications/toggle-theme.desktop"
-SWITCHER_CONFIG="$HOME/.config/theme-switcher/config"
-MANUAL_OVERRIDE="$HOME/.config/theme-switcher/manual_override"
+SWITCHER_CONFIG="$HOME/.config/xfce-night-switch/config"
+MANUAL_OVERRIDE="$HOME/.config/xfce-night-switch/manual_override"
 
 # Defaults
 ICON_DAY="weather-clear"
@@ -32,7 +32,7 @@ PANEL_LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-${XFCE_PLUGIN_ID:-101}"
 # Load locale strings for localized tooltips
 S_TOOLTIP_DAY="Day mode (click to switch to night)"
 S_TOOLTIP_NIGHT="Night mode (click to switch to day)"
-_locale="${HOME}/.config/theme-switcher/locales/${APP_LANG:-en}.sh"
+_locale="${HOME}/.config/xfce-night-switch/locales/${APP_LANG:-en}.sh"
 [ ! -f "$_locale" ] && _locale="${XFCE_NIGHT_SWITCH_DIR:-/usr/share/xfce-night-switch}/locales/${APP_LANG:-en}.sh"
 # shellcheck source=/dev/null
 [ -f "$_locale" ] && source "$_locale"
