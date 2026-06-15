@@ -59,6 +59,59 @@ jobs:
           echo "tag=pr-${PR}-test-${SHORT}"          >> "$GITHUB_OUTPUT"
           echo "version=${BASE}-pr.${PR}.${SHORT}"   >> "$GITHUB_OUTPUT"
 
+      - name: Generate test plan (Claude AI)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          COMMITS=$(git log "origin/main..HEAD" --oneline 2>/dev/null | head -20)
+          CHANGED=$(git diff "origin/main...HEAD" --stat 2>/dev/null | tail -10)
+          DIFF=$(git diff "origin/main...HEAD" -- scripts/ packaging/ systemd/ \
+                 2>/dev/null | head -300)
+
+          AI_CHECKLIST=""
+          if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+            PROMPT="You are a QA engineer for xfce-night-switch (XFCE desktop GTK theme switcher).
+Given these git changes, generate 3-6 specific manual test items as a markdown checklist.
+Focus only on what changed — be concrete (e.g. 'switch launcher to panel-0 via Settings → Panel launcher, verify it moves').
+Output ONLY the checklist lines starting with '- [ ]', nothing else.
+
+Commits:
+${COMMITS}
+
+Changed files:
+${CHANGED}
+
+Diff (truncated):
+${DIFF}"
+
+            RESPONSE=$(curl -sf https://api.anthropic.com/v1/messages \
+              -H "anthropic-version: 2023-06-01" \
+              -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+              -H "content-type: application/json" \
+              -d "$(jq -n --arg p "$PROMPT" \
+                '{model:"claude-haiku-4-5-20251001",max_tokens:400,messages:[{role:"user",content:$p}]}')" \
+              2>/dev/null || true)
+
+            AI_CHECKLIST=$(echo "$RESPONSE" | jq -r '.content[0].text' 2>/dev/null || true)
+          fi
+
+          # Fallback: derive checklist from changed files
+          if [ -z "$AI_CHECKLIST" ]; then
+            AI_CHECKLIST="- [ ] Panel icon visible after setup"
+            echo "$CHANGED" | grep -q "install-panel-launcher" && \
+              AI_CHECKLIST+=$'\n- [ ] Switch panel via Settings → Panel launcher, verify it moves'
+            echo "$CHANGED" | grep -q "auto-update" && \
+              AI_CHECKLIST+=$'\n- [ ] Remove ~/.cache/xfce-night-switch/last-update-check, restart update service'
+            echo "$CHANGED" | grep -q "auto-theme\|toggle-theme" && \
+              AI_CHECKLIST+=$'\n- [ ] Click panel icon — theme switches, icon updates'
+            echo "$CHANGED" | grep -q "postinst\|setup" && \
+              AI_CHECKLIST+=$'\n- [ ] Fresh install: setup runs once, no duplicate output'
+          fi
+
+          printf '%s\n' "$AI_CHECKLIST" > /tmp/test-checklist.txt
+          echo "Test plan ($(wc -l < /tmp/test-checklist.txt) items):"
+          cat /tmp/test-checklist.txt
+
       - name: Build .deb
         env:
           VERSION: ${{ steps.info.outputs.version }}
@@ -84,6 +137,8 @@ jobs:
           install -m644 locales/ru.sh                     "$SHARE/locales/ru.sh"
           echo "$VERSION"  > "$SHARE/VERSION"
           echo "$PR_NUM"   > "$SHARE/PR_NUMBER"
+          # Embed AI-generated test plan for installer checklist
+          cp /tmp/test-checklist.txt "$SHARE/TEST_PLAN"
 
           for w in auto-theme theme-settings toggle-theme xfce-night-switch-setup auto-update; do
             install -m755 "packaging/bin/$w" "$PKG/usr/bin/$w"
@@ -120,6 +175,65 @@ jobs:
             --notes "Automated test build for PR #${PR_NUM} (commit \`${SHORT}\`). **Not for production use.**" \
             "xfce-night-switch_${VERSION}_all.deb"
 
+      - name: Generate test plan (Claude AI)
+        id: testplan
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Collect diff summary for Claude
+          COMMITS=$(git log "origin/main..HEAD" --oneline 2>/dev/null | head -20)
+          CHANGED=$(git diff "origin/main...HEAD" --stat 2>/dev/null | tail -5)
+          DIFF=$(git diff "origin/main...HEAD" -- scripts/ packaging/ systemd/ \
+                 2>/dev/null | head -300)
+
+          AI_CHECKLIST=""
+          if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+            PROMPT="You are a QA engineer for xfce-night-switch (XFCE desktop GTK theme switcher).
+Given these git changes, generate 3-6 specific manual test items as a markdown checklist.
+Focus only on what changed — be concrete (e.g. 'switch launcher to panel-0 via Settings → Panel launcher, verify it moves').
+Output ONLY the checklist lines starting with '- [ ]', nothing else.
+
+Commits:
+${COMMITS}
+
+Changed files:
+${CHANGED}
+
+Diff (truncated):
+${DIFF}"
+
+            RESPONSE=$(curl -sf https://api.anthropic.com/v1/messages \
+              -H "anthropic-version: 2023-06-01" \
+              -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+              -H "content-type: application/json" \
+              -d "$(jq -n --arg p "$PROMPT" \
+                '{model:"claude-haiku-4-5-20251001",max_tokens:400,messages:[{role:"user",content:$p}]}')" \
+              2>/dev/null || true)
+
+            AI_CHECKLIST=$(echo "$RESPONSE" | jq -r '.content[0].text' 2>/dev/null || true)
+          fi
+
+          # Fallback: derive basic checklist from changed files
+          if [ -z "$AI_CHECKLIST" ]; then
+            AI_CHECKLIST="- [ ] Panel icon visible after setup"
+            echo "$CHANGED" | grep -q "install-panel-launcher" && \
+              AI_CHECKLIST+="
+- [ ] Switch panel via Settings → Panel launcher, verify it moves"
+            echo "$CHANGED" | grep -q "auto-update" && \
+              AI_CHECKLIST+="
+- [ ] Remove ~/.cache/xfce-night-switch/last-update-check and restart update service"
+            echo "$CHANGED" | grep -q "auto-theme\|toggle-theme" && \
+              AI_CHECKLIST+="
+- [ ] Click panel icon — theme switches, icon updates"
+            echo "$CHANGED" | grep -q "postinst\|setup" && \
+              AI_CHECKLIST+="
+- [ ] Fresh install: setup runs once, no duplicate output"
+          fi
+
+          # Write to file so next step can read it
+          printf '%s' "$AI_CHECKLIST" > /tmp/test-checklist.txt
+          echo "generated test checklist ($(wc -l < /tmp/test-checklist.txt) items)"
+
       - name: Post/update PR comment
         env:
           PR_NUM:  ${{ steps.info.outputs.pr }}
@@ -127,23 +241,25 @@ jobs:
           VERSION: ${{ steps.info.outputs.version }}
         run: |
           DEB_URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/xfce-night-switch_${VERSION}_all.deb"
+          TEST_ITEMS=$(cat /tmp/test-checklist.txt 2>/dev/null || echo "- [ ] Panel visible, toggle works, settings opens")
 
           BODY="<!-- xfce-night-switch-test-build -->
-          ## 🧪 Test build ready — PR #${PR_NUM}
+## 🧪 Test build ready — PR #${PR_NUM}
 
-          Install the test build (Ubuntu/Debian/Mint):
-          \`\`\`bash
-          wget -q '${DEB_URL}' -O /tmp/xns-test.deb \\
-            && sudo dpkg -i /tmp/xns-test.deb \\
-            && xfce-night-switch-setup
-          \`\`\`
+Install (Ubuntu/Debian/Mint):
+\`\`\`bash
+wget -q '${DEB_URL}' -O /tmp/xns-test.deb \\
+  && sudo dpkg -i /tmp/xns-test.deb \\
+  && xfce-night-switch-setup
+\`\`\`
 
-          **After testing**, confirm it works by commenting:
-          \`\`\`
-          /test-passed
-          \`\`\`"
+### Checklist
+${TEST_ITEMS}
+- [ ] No errors in \`journalctl --user -u xfce-night-switch-startup.service\`
 
-          # Remove previous test-build comments from this workflow
+After verifying all items, confirm by commenting \`/test-passed\` — PR will auto-merge."
+
+          # Remove previous test-build comments
           gh api "repos/${{ github.repository }}/issues/${PR_NUM}/comments" \
             --jq '.[] | select(.body | startswith("<!-- xfce-night-switch-test-build -->")) | .id' \
             | xargs -I{} gh api -X DELETE \
