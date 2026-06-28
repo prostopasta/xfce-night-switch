@@ -133,8 +133,13 @@ if [ -f "$MANUAL_OVERRIDE" ]; then
 fi
 
 # Apply GTK theme only if changed; always sync Terminator profile
+[ "$WANT_THEME" = "$LIGHT_THEME" ] && WANT_NAME="light" || WANT_NAME="dark"
 if [ "$CURRENT" != "$WANT_THEME" ]; then
     apply_theme "$WANT_THEME" "$WANT_MODE" "$WANT_TERM_PROFILE" "$WANT_ICON" "$WANT_TOOLTIP"
+    if [ "${MONITOR_DIMMING:-disabled}" = "enabled" ]; then
+        _script="${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/monitor-dimming.sh"
+        [ -x "$_script" ] && "$_script" "$WANT_NAME" &
+    fi
 else
     terminator_switch "$WANT_TERM_PROFILE"
 fi

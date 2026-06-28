@@ -23,3 +23,23 @@ DARK_THEME="Adwaita-dark"
 # Terminator profile names — must match [[ProfileName]] in ~/.config/terminator/config
 TERM_PROFILE_LIGHT="default"
 TERM_PROFILE_DARK="default"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Monitor brightness dimming (optional — disabled by default)
+# Enable via theme-settings GUI or set MONITOR_DIMMING="enabled" manually.
+# Requires: ddcutil + i2c-tools (external monitors via DDC/CI)
+#           or xrandr (software dimming, no extra deps)
+#           Write access to /sys/class/backlight/*/brightness (built-in display)
+# ─────────────────────────────────────────────────────────────────────────────
+MONITOR_DIMMING="disabled"    # enabled / disabled
+
+# Built-in display (eDP-1) — hardware backlight, 0–100 %
+DIMMING_EDPI_DARK="70"
+DIMMING_EDPI_LIGHT="100"
+
+# External monitors brightness, 0–100 %
+DIMMING_EXT_DARK="50"
+DIMMING_EXT_LIGHT="100"
+
+# Method for external monitors: ddcutil (hardware DDC/CI) or xrandr (software)
+DIMMING_EXT_METHOD="ddcutil"
