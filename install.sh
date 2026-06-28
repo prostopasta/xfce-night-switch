@@ -72,7 +72,8 @@ _install_source() {
 
     echo "── Scripts ────────────────────────────────────"
     for f in auto-theme.sh toggle-theme.sh theme-settings.sh \
-              install-panel-launcher.sh sunrise-sunset.py auto-update.sh; do
+              install-panel-launcher.sh sunrise-sunset.py auto-update.sh \
+              monitor-dimming.sh; do
         cp "$REPO/scripts/$f" "$BIN/$f"
         chmod +x "$BIN/$f"
         echo "  installed: ~/.local/bin/$f"

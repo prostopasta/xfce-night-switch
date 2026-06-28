@@ -1,0 +1,5 @@
+# Project-wide ShellCheck configuration.
+#
+# SC2155: export VAR="$(cmd)" — intentional pattern throughout scripts
+# SC1090: source "$dynamic_path" — core pattern for sourcing user config
+disable=SC2155,SC1090

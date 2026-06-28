@@ -130,7 +130,9 @@ _load_strings() {
         S_CITY_PARSE_ERR="Could not parse results."
         S_IP_ERROR="Could not determine location by IP."
         S_LANG_TITLE="App Language"
+        # shellcheck disable=SC2034
         S_LANG_FIELD="Language:"
+        # shellcheck disable=SC2034
         S_LANG_OPTS="English (en)!Русский (ru)"
         S_LANG_TEXT="UI language and city search results language."
     fi
@@ -764,6 +766,61 @@ show_panel_dialog() {
         --timeout=2 --no-buttons --width=320 2>/dev/null &
 }
 
+# ── Monitor dimming dialog ───────────────────────────────────────────────────
+show_dimming_dialog() {
+    source "$SWITCHER_CONFIG"; _load_strings
+
+    local ddcutil_hint=""
+    command -v ddcutil >/dev/null 2>&1 || ddcutil_hint=" (not installed)"
+
+    local result ret
+    result=$(yad --form \
+        --title="${S_DIMMING_TITLE:-🔆  Monitor Dimming}" \
+        --window-icon="display-brightness-symbolic" \
+        --width=420 --center \
+        --field="${S_DIMMING_ENABLE:-Enable monitor dimming}:CHK" \
+            "$( [ "${MONITOR_DIMMING:-disabled}" = "enabled" ] && echo TRUE || echo FALSE )" \
+        --field="${S_DIMMING_EXT_METHOD:-External method}:CB" \
+            "ddcutil${ddcutil_hint}!xrandr (software)" \
+        --field="${S_DIMMING_EDPI_DARK:-Built-in display — dark theme, %}:NUM" \
+            "${DIMMING_EDPI_DARK:-70}!0..100!5" \
+        --field="${S_DIMMING_EDPI_LIGHT:-Built-in display — light theme, %}:NUM" \
+            "${DIMMING_EDPI_LIGHT:-100}!0..100!5" \
+        --field="${S_DIMMING_EXT_DARK:-External monitors — dark theme, %}:NUM" \
+            "${DIMMING_EXT_DARK:-50}!0..100!5" \
+        --field="${S_DIMMING_EXT_LIGHT:-External monitors — light theme, %}:NUM" \
+            "${DIMMING_EXT_LIGHT:-100}!0..100!5" \
+        --button="${S_TEST:-Test now}!display:2" \
+        --button="gtk-cancel:1" \
+        --button="gtk-ok:0" \
+        2>/dev/null)
+    ret=$?
+    [ $ret -eq 1 ] && return
+
+    local v_enabled v_method v_ed v_el v_xd v_xl
+    v_enabled=$(echo "$result" | cut -d'|' -f1)
+    v_method=$(echo "$result"  | cut -d'|' -f2 | awk '{print $1}')
+    v_ed=$(echo "$result"      | cut -d'|' -f3)
+    v_el=$(echo "$result"      | cut -d'|' -f4)
+    v_xd=$(echo "$result"      | cut -d'|' -f5)
+    v_xl=$(echo "$result"      | cut -d'|' -f6)
+
+    local dm_val
+    [ "$v_enabled" = "TRUE" ] && dm_val="enabled" || dm_val="disabled"
+
+    _cfg_set "MONITOR_DIMMING"    "\"$dm_val\""
+    _cfg_set "DIMMING_EXT_METHOD" "\"$v_method\""
+    _cfg_set "DIMMING_EDPI_DARK"  "\"${v_ed%.*}\""
+    _cfg_set "DIMMING_EDPI_LIGHT" "\"${v_el%.*}\""
+    _cfg_set "DIMMING_EXT_DARK"   "\"${v_xd%.*}\""
+    _cfg_set "DIMMING_EXT_LIGHT"  "\"${v_xl%.*}\""
+
+    # "Test now" button (ret=2) or OK with dimming enabled → apply immediately
+    if [ $ret -eq 2 ] || [ "$dm_val" = "enabled" ]; then
+        _reapply_theme
+    fi
+}
+
 # ── Main dialog ─────────────────────────────────────────────────────────────
 show_main_dialog() {
     source "$SWITCHER_CONFIG"; _load_strings
@@ -775,9 +832,13 @@ show_main_dialog() {
     else
         auto_label="$S_AUTO_OFF"
     fi
+    local dimming_label
+    [ "${MONITOR_DIMMING:-disabled}" = "enabled" ] \
+        && dimming_label="${S_ENABLED:-Enabled} (${DIMMING_EXT_METHOD:-ddcutil})" \
+        || dimming_label="${S_DISABLED:-Disabled}"
     local action
     action=$(yad \
-        --title="$S_APP_TITLE" --width=560 --height=310 \
+        --title="$S_APP_TITLE" --width=560 --height=340 \
         --list \
         --column="$S_COL_SETTING" --column="$S_COL_VALUE" --column=":HD" \
         --no-headers --print-column=3 \
@@ -787,6 +848,7 @@ show_main_dialog() {
         "${S_THEMES:-🎨  Themes}"  "${LIGHT_THEME:-?} / ${DARK_THEME:-?}"        "themes" \
         "${S_PANEL:-🖥️  Panel launcher}"  "${XFCE_LAUNCHER_PANELS:-?} (plugin-${XFCE_PLUGIN_ID:-?})"  "panel" \
         "$S_AUTO"          "$auto_label"                                          "auto" \
+        "${S_DIMMING_TITLE:-🔆  Monitor Dimming}"  "$dimming_label"              "dimming" \
         "$S_LANG"          "$S_LANG_VALUE"                                        "lang" \
         "${S_RESTART:-🔄  Restart panel}"  ""                                     "restart" \
         2>/dev/null)
@@ -797,6 +859,7 @@ show_main_dialog() {
         themes)  show_themes_dialog; _reapply_theme ;;
         panel)   show_panel_dialog; show_main_dialog; return ;;
         auto)    show_auto_dialog ;;
+        dimming) show_dimming_dialog ;;
         lang)    show_lang_dialog ;;
         restart)
             _restart_panel

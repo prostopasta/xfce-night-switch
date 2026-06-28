@@ -82,6 +82,12 @@ apply_theme() {
     update_panel_icon "$icon" "$tooltip"
 }
 
+apply_dimming() {
+    [ "${MONITOR_DIMMING:-disabled}" = "enabled" ] || return
+    local script="${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/monitor-dimming.sh"
+    [ -x "$script" ] && "$script" "$1" &
+}
+
 CURRENT=$(xfconf-query -c xsettings -p /Net/ThemeName 2>/dev/null)
 
 case "${1:-toggle}" in
@@ -89,12 +95,14 @@ case "${1:-toggle}" in
         apply_theme "$LIGHT_THEME" "default" "$TERM_PROFILE_LIGHT" \
             "$ICON_DAY" "$S_TOOLTIP_DAY"
         echo "light" > "$MANUAL_OVERRIDE"
+        apply_dimming "light"
         echo "Day: $LIGHT_THEME"
         ;;
     dark)
         apply_theme "$DARK_THEME" "prefer-dark" "$TERM_PROFILE_DARK" \
             "$ICON_NIGHT" "$S_TOOLTIP_NIGHT"
         echo "dark" > "$MANUAL_OVERRIDE"
+        apply_dimming "dark"
         echo "Night: $DARK_THEME"
         ;;
     toggle)
@@ -102,11 +110,13 @@ case "${1:-toggle}" in
             apply_theme "$LIGHT_THEME" "default" "$TERM_PROFILE_LIGHT" \
                 "$ICON_DAY" "$S_TOOLTIP_DAY"
             echo "light" > "$MANUAL_OVERRIDE"
+            apply_dimming "light"
             echo "Day: $LIGHT_THEME"
         else
             apply_theme "$DARK_THEME" "prefer-dark" "$TERM_PROFILE_DARK" \
                 "$ICON_NIGHT" "$S_TOOLTIP_NIGHT"
             echo "dark" > "$MANUAL_OVERRIDE"
+            apply_dimming "dark"
             echo "Night: $DARK_THEME"
         fi
         ;;
