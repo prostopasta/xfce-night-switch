@@ -96,7 +96,6 @@ _install_source() {
     echo "── Locale files ───────────────────────────────"
     for f in "$REPO/locales"/*.sh; do
         dst="$CFG/locales/$(basename "$f")"
-        [[ -f "$dst" ]] && echo "  skipped (exists): $(basename "$f")" && continue
         cp "$f" "$dst"
         echo "  installed: $(basename "$f")"
     done

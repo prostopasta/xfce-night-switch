@@ -20,10 +20,14 @@ S_UPDATE_BTN_INSTALL="Install"
 S_UPDATE_BTN_LATER="Later"
 S_UPDATE_DONE="Updated to v%s successfully.\nRestart your session to apply changes."
 S_UPDATE_ERR="Update failed. Install manually:\n  sudo dpkg -i /tmp/xfce-night-switch.deb"
-_locale="${HOME}/.config/xfce-night-switch/locales/${APP_LANG:-en}.sh"
-[ ! -f "$_locale" ] && _locale="${SHARE}/locales/${APP_LANG:-en}.sh"
-# shellcheck source=/dev/null
-[ -f "$_locale" ] && source "$_locale"
+_sys_en="${SHARE}/locales/en.sh"
+[ -f "$_sys_en" ] && source "$_sys_en"
+if [ -n "${APP_LANG:-}" ] && [ "$APP_LANG" != "en" ]; then
+    _sys_lang="${SHARE}/locales/${APP_LANG}.sh"
+    [ -f "$_sys_lang" ] && source "$_sys_lang"
+fi
+_user_locale="${HOME}/.config/xfce-night-switch/locales/${APP_LANG:-en}.sh"
+[ -f "$_user_locale" ] && source "$_user_locale"
 
 # Throttle: skip if checked within the last 24 hours
 NOW=$(date +%s)

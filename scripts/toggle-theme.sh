@@ -23,10 +23,14 @@ PANEL_LAUNCHER_DIR="$HOME/.config/xfce4/panel/launcher-${XFCE_PLUGIN_ID:-101}"
 # Load locale strings for localized tooltips
 S_TOOLTIP_DAY="Day mode (click to switch to night)"
 S_TOOLTIP_NIGHT="Night mode (click to switch to day)"
-_locale="${HOME}/.config/xfce-night-switch/locales/${APP_LANG:-en}.sh"
-[ ! -f "$_locale" ] && _locale="${XFCE_NIGHT_SWITCH_DIR:-/usr/share/xfce-night-switch}/locales/${APP_LANG:-en}.sh"
-# shellcheck source=/dev/null
-[ -f "$_locale" ] && source "$_locale"
+_sys_en="${XFCE_NIGHT_SWITCH_DIR:-/usr/share/xfce-night-switch}/locales/en.sh"
+[ -f "$_sys_en" ] && source "$_sys_en"
+if [ -n "${APP_LANG:-}" ] && [ "$APP_LANG" != "en" ]; then
+    _sys_lang="${XFCE_NIGHT_SWITCH_DIR:-/usr/share/xfce-night-switch}/locales/${APP_LANG}.sh"
+    [ -f "$_sys_lang" ] && source "$_sys_lang"
+fi
+_user_locale="${HOME}/.config/xfce-night-switch/locales/${APP_LANG:-en}.sh"
+[ -f "$_user_locale" ] && source "$_user_locale"
 
 update_field() {
     local file=$1 field=$2 value=$3

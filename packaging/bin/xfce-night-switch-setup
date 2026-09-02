@@ -45,13 +45,11 @@ else
     echo "  exists (not overwritten): $CONFIG_DIR/config"
 fi
 
-# Copy locale files without overwriting user edits
+# Install / update built-in locale files
 for f in "$SHARE/locales/"*.sh; do
     dst="$CONFIG_DIR/locales/$(basename "$f")"
-    if [ ! -f "$dst" ]; then
-        cp "$f" "$dst"
-        echo "  locale: $(basename "$f")"
-    fi
+    cp "$f" "$dst"
+    echo "  locale: $(basename "$f")"
 done
 
 # ── Icon ───────────────────────────────────────────────────────────────────
