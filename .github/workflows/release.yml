@@ -117,6 +117,7 @@ jobs:
           install -m755 scripts/install-panel-launcher.sh "$SHARE/install-panel-launcher.sh"
           install -m755 scripts/sunrise-sunset.py         "$SHARE/sunrise-sunset.py"
           install -m755 scripts/auto-update.sh            "$SHARE/auto-update.sh"
+          install -m755 scripts/monitor-dimming.sh        "$SHARE/monitor-dimming.sh"
           install -m644 packaging/config.default          "$SHARE/config.default"
           install -m644 locales/en.sh                     "$SHARE/locales/en.sh"
           install -m644 locales/ru.sh                     "$SHARE/locales/ru.sh"

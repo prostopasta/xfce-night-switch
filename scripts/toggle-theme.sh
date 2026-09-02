@@ -85,6 +85,7 @@ apply_theme() {
 apply_dimming() {
     [ "${MONITOR_DIMMING:-disabled}" = "enabled" ] || return
     local script="${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/monitor-dimming.sh"
+    [ ! -f "$script" ] && script="/usr/share/xfce-night-switch/monitor-dimming.sh"
     [ -x "$script" ] && "$script" "$1" &
 }
 

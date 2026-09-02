@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1090,SC2155
 # monitor-dimming.sh — apply monitor brightness when the XFCE theme changes.
 #
 # Usage: monitor-dimming.sh [light|dark]
@@ -12,6 +13,8 @@
 
 SWITCHER_CONFIG="${HOME}/.config/xfce-night-switch/config"
 [ -f "$SWITCHER_CONFIG" ] && source "$SWITCHER_CONFIG"
+
+[[ "${MONITOR_DIMMING:-disabled}" != "enabled" ]] && exit 0
 
 # ── Resolve target theme ──────────────────────────────────────────────────────
 if [[ "$1" == "light" || "$1" == "dark" ]]; then
@@ -30,43 +33,54 @@ else
     EXT_PCTG="${DIMMING_EXT_LIGHT:-100}"
 fi
 
-# ── Built-in display (eDP-*): hardware backlight ──────────────────────────────
-_apply_edpi() {
+# ── Built-in / internal displays: hardware backlight ─────────────────────────
+_apply_backlight() {
     local pctg="$1"
-    local bl_dir
-    # Pick the first available backlight device
-    bl_dir=$(ls /sys/class/backlight/ 2>/dev/null | head -1)
-    [[ -z "$bl_dir" ]] && return
 
-    local max val
-    max=$(cat "/sys/class/backlight/${bl_dir}/max_brightness" 2>/dev/null) || return
-    val=$(( max * pctg / 100 ))
+    # Iterate through all available backlight devices (Intel, AMD, ACPI, Nvidia)
+    for bl in /sys/class/backlight/*; do
+        [ -d "$bl" ] || continue
+        local max val
+        max=$(cat "${bl}/max_brightness" 2>/dev/null || true)
+        [[ -z "$max" || "$max" -le 0 ]] && continue
 
-    # Try direct write first (user in 'video' group); fall back to sudo
-    if ! tee "/sys/class/backlight/${bl_dir}/brightness" <<< "$val" >/dev/null 2>&1; then
-        sudo tee "/sys/class/backlight/${bl_dir}/brightness" <<< "$val" >/dev/null 2>&1 || true
-    fi
+        val=$(( max * pctg / 100 ))
+        # Try direct write first (user in 'video' group); fall back to sudo
+        if ! tee "${bl}/brightness" <<< "$val" >/dev/null 2>&1; then
+            sudo tee "${bl}/brightness" <<< "$val" >/dev/null 2>&1 || true
+        fi
+    done
 }
 
-# ── External monitors ─────────────────────────────────────────────────────────
+# ── External / other connected displays ───────────────────────────────────────
 _apply_external() {
     local pctg="$1"
     local method="${DIMMING_EXT_METHOD:-ddcutil}"
 
-    # Enumerate connected outputs, skip built-in eDP displays
-    while read -r output; do
-        [[ "$output" == eDP* ]] && continue
-
-        if [[ "$method" == "ddcutil" ]]; then
-            ddcutil --display "$output" setvcp 10 "$pctg" 2>/dev/null || true
+    if [[ "$method" == "ddcutil" ]]; then
+        local disps
+        disps=$(ddcutil detect --terse 2>/dev/null | awk '/^Display /{print $2}')
+        if [ -n "$disps" ]; then
+            for d in $disps; do
+                ddcutil --display "$d" setvcp 10 "$pctg" 2>/dev/null || true
+            done
         else
-            # xrandr software brightness: map 0–100 % → 0.00–1.00
+            ddcutil setvcp 10 "$pctg" 2>/dev/null || true
+        fi
+    else
+        # xrandr software brightness: map 0–100 % → 0.00–1.00
+        while read -r output; do
+            # Skip internal laptop panels if backlight device exists
+            if [ -d /sys/class/backlight ] && [ -n "$(ls -A /sys/class/backlight 2>/dev/null)" ]; then
+                [[ "$output" =~ ^(eDP|LVDS|DSI) ]] && continue
+            fi
+
             local flt
             flt=$(awk "BEGIN{printf \"%.2f\", $pctg/100}")
             xrandr --output "$output" --brightness "$flt" 2>/dev/null || true
-        fi
-    done < <(xrandr --query 2>/dev/null | awk '/^[^ ]+ connected [^(]/{print $1}')
+        done < <(xrandr --query 2>/dev/null | awk '/^[^ ]+ connected/{print $1}')
+    fi
 }
 
-_apply_edpi    "$EDPI_PCTG"
-_apply_external "$EXT_PCTG"
+_apply_backlight "$EDPI_PCTG"
+_apply_external  "$EXT_PCTG"

@@ -138,6 +138,7 @@ if [ "$CURRENT" != "$WANT_THEME" ]; then
     apply_theme "$WANT_THEME" "$WANT_MODE" "$WANT_TERM_PROFILE" "$WANT_ICON" "$WANT_TOOLTIP"
     if [ "${MONITOR_DIMMING:-disabled}" = "enabled" ]; then
         _script="${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/monitor-dimming.sh"
+        [ ! -f "$_script" ] && _script="/usr/share/xfce-night-switch/monitor-dimming.sh"
         [ -x "$_script" ] && "$_script" "$WANT_NAME" &
     fi
 else

@@ -813,12 +813,12 @@ show_dimming_dialog() {
     local dm_val
     [ "$v_enabled" = "TRUE" ] && dm_val="enabled" || dm_val="disabled"
 
-    _cfg_set "MONITOR_DIMMING"    "\"$dm_val\""
-    _cfg_set "DIMMING_EXT_METHOD" "\"$v_method\""
-    _cfg_set "DIMMING_EDPI_DARK"  "\"${v_ed%.*}\""
-    _cfg_set "DIMMING_EDPI_LIGHT" "\"${v_el%.*}\""
-    _cfg_set "DIMMING_EXT_DARK"   "\"${v_xd%.*}\""
-    _cfg_set "DIMMING_EXT_LIGHT"  "\"${v_xl%.*}\""
+    _cfg_set "MONITOR_DIMMING"    "$dm_val"
+    _cfg_set "DIMMING_EXT_METHOD" "$v_method"
+    _cfg_set "DIMMING_EDPI_DARK"  "${v_ed%.*}"
+    _cfg_set "DIMMING_EDPI_LIGHT" "${v_el%.*}"
+    _cfg_set "DIMMING_EXT_DARK"   "${v_xd%.*}"
+    _cfg_set "DIMMING_EXT_LIGHT"  "${v_xl%.*}"
 
     # "Test now" button (ret=2) or OK with dimming enabled → apply immediately
     if [ $ret -eq 2 ] || [ "$dm_val" = "enabled" ]; then
