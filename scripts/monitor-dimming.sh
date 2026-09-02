@@ -11,6 +11,9 @@
 # External monitors: ddcutil (DDC/CI hardware) or xrandr (software), see
 # DIMMING_EXT_METHOD in config.
 
+export DISPLAY="${DISPLAY:-:0}"
+export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
+
 SWITCHER_CONFIG="${HOME}/.config/xfce-night-switch/config"
 [ -f "$SWITCHER_CONFIG" ] && source "$SWITCHER_CONFIG"
 
@@ -56,19 +59,26 @@ _apply_backlight() {
 _apply_external() {
     local pctg="$1"
     local method="${DIMMING_EXT_METHOD:-ddcutil}"
+    local ddc_success=false
 
-    if [[ "$method" == "ddcutil" ]]; then
+    if [[ "$method" == "ddcutil" ]] && command -v ddcutil >/dev/null 2>&1; then
         local disps
         disps=$(ddcutil detect --terse 2>/dev/null | awk '/^Display /{print $2}')
         if [ -n "$disps" ]; then
             for d in $disps; do
-                ddcutil --display "$d" setvcp 10 "$pctg" 2>/dev/null || true
+                if ddcutil --display "$d" setvcp 10 "$pctg" 2>/dev/null; then
+                    ddc_success=true
+                fi
             done
         else
-            ddcutil setvcp 10 "$pctg" 2>/dev/null || true
+            if ddcutil setvcp 10 "$pctg" 2>/dev/null; then
+                ddc_success=true
+            fi
         fi
-    else
-        # xrandr software brightness: map 0–100 % → 0.00–1.00
+    fi
+
+    # Fall back to xrandr software brightness if method is xrandr or ddcutil failed/unavailable
+    if [[ "$method" == "xrandr" ]] || ! $ddc_success; then
         while read -r output; do
             # Skip internal laptop panels if backlight device exists
             if [ -d /sys/class/backlight ] && [ -n "$(ls -A /sys/class/backlight 2>/dev/null)" ]; then
