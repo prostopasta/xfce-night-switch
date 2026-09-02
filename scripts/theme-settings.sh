@@ -442,9 +442,19 @@ show_auto_dialog() {
         [ -n "$city" ] && city_label="$city"
     fi
     local sun_preview=""
+    local sun_cache="$HOME/.cache/xfce-night-switch/sun_times"
     if [ -n "$lat" ] && [ -n "$lon" ]; then
-        local times; times=$(python3 "${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/sunrise-sunset.py" "$lat" "$lon" both 2>/dev/null)
-        [ -n "$times" ] && sun_preview="  (☀ $(echo $times | cut -d' ' -f1) — 🌙 $(echo $times | cut -d' ' -f2))"
+        local py_script="${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/sunrise-sunset.py"
+        [ ! -f "$py_script" ] && py_script="/usr/share/xfce-night-switch/sunrise-sunset.py"
+        local times=""
+        [ -f "$py_script" ] && times=$(python3 "$py_script" "$lat" "$lon" both 2>/dev/null || true)
+        if [[ "$times" =~ ^[0-2][0-9]:[0-5][0-9]\ [0-2][0-9]:[0-5][0-9]$ ]]; then
+            mkdir -p "$HOME/.cache/xfce-night-switch"
+            echo "$times" > "$sun_cache"
+        elif [ -f "$sun_cache" ] && [ -s "$sun_cache" ]; then
+            times=$(cat "$sun_cache" 2>/dev/null || true)
+        fi
+        [ -n "$times" ] && sun_preview="  (☀ $(echo "$times" | cut -d' ' -f1) — 🌙 $(echo "$times" | cut -d' ' -f2))"
     fi
     local enabled_val="FALSE"; [ "$AUTO_SWITCHER" = "enabled" ] && enabled_val="TRUE"
     local mode_cb="$S_AUTO_MODE_OPTS"
