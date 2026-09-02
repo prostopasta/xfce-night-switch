@@ -17,17 +17,28 @@ mkdir -p "$ICON_CACHE"
 render_src="$REPO_DIR/icons/theme-moon.svg"
 cached="$ICON_CACHE/test-moon.png"
 
+HAS_CONVERTER=false
 if command -v magick >/dev/null 2>&1; then
+    HAS_CONVERTER=true
     magick -background none -density 384 "$render_src" \
-           -resize "${PANEL_SIZE}x${PANEL_SIZE}" "$cached" 2>/dev/null
+           -resize "${PANEL_SIZE}x${PANEL_SIZE}" "$cached" 2>/dev/null || true
 elif command -v convert >/dev/null 2>&1; then
+    HAS_CONVERTER=true
     convert -background none -density 384 "$render_src" \
-            -resize "${PANEL_SIZE}x${PANEL_SIZE}" "$cached" 2>/dev/null
+            -resize "${PANEL_SIZE}x${PANEL_SIZE}" "$cached" 2>/dev/null || true
+elif command -v rsvg-convert >/dev/null 2>&1; then
+    HAS_CONVERTER=true
+    rsvg-convert -w "$PANEL_SIZE" -h "$PANEL_SIZE" "$render_src" -o "$cached" 2>/dev/null || true
 fi
 
-if [[ ! -f "$cached" ]]; then
-    echo "  ✗ Failed to render SVG icon to PNG" >&2
-    exit 1
+if $HAS_CONVERTER; then
+    if [[ ! -f "$cached" ]]; then
+        echo "  ✗ Failed to render SVG icon to PNG" >&2
+        exit 1
+    fi
+    echo "  ✓ SVG render & resize test passed"
+else
+    echo "  - No image converter installed on system (skipping SVG rasterization test)"
 fi
 
 W=$(identify -format "%w" "$cached" 2>/dev/null || echo 24)
