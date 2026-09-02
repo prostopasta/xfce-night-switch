@@ -693,6 +693,15 @@ show_panel_dialog() {
 show_dimming_dialog() {
     source "$SWITCHER_CONFIG"; _load_strings
 
+    local init_enabled="${1:-}" init_method="${2:-}" init_ed="${3:-}" init_el="${4:-}" init_xd="${5:-}" init_xl="${6:-}"
+
+    local chk_val
+    if [ -n "$init_enabled" ]; then
+        chk_val="$init_enabled"
+    else
+        [ "${MONITOR_DIMMING:-disabled}" = "enabled" ] && chk_val="TRUE" || chk_val="FALSE"
+    fi
+
     local ddcutil_hint=""
     command -v ddcutil >/dev/null 2>&1 || ddcutil_hint=" (${S_NOT_INSTALLED:-not installed})"
 
@@ -704,26 +713,32 @@ show_dimming_dialog() {
     local dim_script="${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/monitor-dimming.sh"
     [ ! -f "$dim_script" ] && dim_script="/usr/share/xfce-night-switch/monitor-dimming.sh"
 
+    local sel_method="${init_method:-${DIMMING_EXT_METHOD:-xrandr}}"
     local ext_method_opts="xrandr (software)!ddcutil (hardware DDC/CI)${ddcutil_hint}"
-    [ "${DIMMING_EXT_METHOD:-xrandr}" = "ddcutil" ] && ext_method_opts="ddcutil (hardware DDC/CI)${ddcutil_hint}!xrandr (software)"
+    [[ "$sel_method" == ddcutil* ]] && ext_method_opts="ddcutil (hardware DDC/CI)${ddcutil_hint}!xrandr (software)"
+
+    local val_ed="${init_ed:-${DIMMING_EDPI_DARK:-70}}"
+    local val_el="${init_el:-${DIMMING_EDPI_LIGHT:-100}}"
+    local val_xd="${init_xd:-${DIMMING_EXT_DARK:-50}}"
+    local val_xl="${init_xl:-${DIMMING_EXT_LIGHT:-100}}"
 
     local result ret
     result=$(yad --form \
         --title="${S_DIMMING_TITLE:-🔆  Monitor Dimming}" \
         --window-icon="display-brightness-symbolic" \
-        --width=460 --center \
+        --width=380 --center \
         --field="${S_DIMMING_ENABLE:-Enable monitor dimming}:CHK" \
-            "$( [ "${MONITOR_DIMMING:-disabled}" = "enabled" ] && echo TRUE || echo FALSE )" \
+            "$chk_val" \
         --field="${S_DIMMING_EXT_METHOD:-External method}:CB" \
             "$ext_method_opts" \
         --field="${S_DIMMING_EDPI_DARK:-Built-in display — dark theme, %}:NUM" \
-            "${DIMMING_EDPI_DARK:-70}!0..100!5" \
+            "${val_ed%.*}!0..100!5" \
         --field="${S_DIMMING_EDPI_LIGHT:-Built-in display — light theme, %}:NUM" \
-            "${DIMMING_EDPI_LIGHT:-100}!0..100!5" \
+            "${val_el%.*}!0..100!5" \
         --field="${S_DIMMING_EXT_DARK:-External monitors — dark theme, %}:NUM" \
-            "${DIMMING_EXT_DARK:-50}!0..100!5" \
+            "${val_xd%.*}!0..100!5" \
         --field="${S_DIMMING_EXT_LIGHT:-External monitors — light theme, %}:NUM" \
-            "${DIMMING_EXT_LIGHT:-100}!0..100!5" \
+            "${val_xl%.*}!0..100!5" \
         --button="${S_DIMMING_TEST_DARK:-🌙 Test Dark}!display:2" \
         --button="${S_DIMMING_TEST_LIGHT:-☀️ Test Light}!display:3" \
         --button="gtk-cancel:1" \
@@ -744,26 +759,31 @@ show_dimming_dialog() {
     v_xd=$(echo "$result"      | cut -d'|' -f5)
     v_xl=$(echo "$result"      | cut -d'|' -f6)
 
-    local dm_val
-    [ "$v_enabled" = "TRUE" ] && dm_val="enabled" || dm_val="disabled"
-
-    _cfg_set "MONITOR_DIMMING"    "$dm_val"
-    _cfg_set "DIMMING_EXT_METHOD" "$v_method"
-    _cfg_set "DIMMING_EDPI_DARK"  "${v_ed%.*}"
-    _cfg_set "DIMMING_EDPI_LIGHT" "${v_el%.*}"
-    _cfg_set "DIMMING_EXT_DARK"   "${v_xd%.*}"
-    _cfg_set "DIMMING_EXT_LIGHT"  "${v_xl%.*}"
-
     if [ $ret -eq 2 ]; then
-        # Preview dark brightness immediately
-        [ -x "$dim_script" ] && "$dim_script" "dark"
-        show_dimming_dialog
+        # Preview dark brightness directly without writing to config
+        [ -x "$dim_script" ] && "$dim_script" --apply "${v_ed%.*}" "${v_xd%.*}" "$v_method" &
+        show_dimming_dialog "$v_enabled" "$v_method" "$v_ed" "$v_el" "$v_xd" "$v_xl"
     elif [ $ret -eq 3 ]; then
-        # Preview light brightness immediately
-        [ -x "$dim_script" ] && "$dim_script" "light"
-        show_dimming_dialog
-    elif [ "$dm_val" = "enabled" ]; then
-        [ -x "$dim_script" ] && "$dim_script" "$cur_mode" &
+        # Preview light brightness directly without writing to config
+        [ -x "$dim_script" ] && "$dim_script" --apply "${v_el%.*}" "${v_xl%.*}" "$v_method" &
+        show_dimming_dialog "$v_enabled" "$v_method" "$v_ed" "$v_el" "$v_xd" "$v_xl"
+    elif [ $ret -eq 0 ]; then
+        # OK: save final configuration
+        local dm_val
+        [ "$v_enabled" = "TRUE" ] && dm_val="enabled" || dm_val="disabled"
+
+        _cfg_set "MONITOR_DIMMING"    "$dm_val"
+        _cfg_set "DIMMING_EXT_METHOD" "$v_method"
+        _cfg_set "DIMMING_EDPI_DARK"  "${v_ed%.*}"
+        _cfg_set "DIMMING_EDPI_LIGHT" "${v_el%.*}"
+        _cfg_set "DIMMING_EXT_DARK"   "${v_xd%.*}"
+        _cfg_set "DIMMING_EXT_LIGHT"  "${v_xl%.*}"
+
+        if [ "$dm_val" = "enabled" ]; then
+            [ -x "$dim_script" ] && "$dim_script" "$cur_mode" &
+        else
+            [ -x "$dim_script" ] && "$dim_script" --apply 100 100 "$v_method" &
+        fi
     fi
 }
 
