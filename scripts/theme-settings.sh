@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1090,SC2155,SC2034,SC2059,SC2086,SC2181,SC2001,SC2015
 # Theme Switcher Settings — graphical settings dialog.
 
 export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
@@ -199,20 +200,24 @@ render_icon() {
                 "$src" > "$tmp_svg"
             render_src="$tmp_svg"
         fi
-        local rs=$(( PANEL_SIZE * 2 ))
         case "$render_src" in
             *.svg|*.SVG)
-                inkscape -w "$rs" -h "$rs" --export-type=png \
-                    --export-filename="${cached}.tmp.png" "$render_src" 2>/dev/null \
-                && convert -resize "${PANEL_SIZE}x${PANEL_SIZE}" \
-                       "${cached}.tmp.png" "$cached" 2>/dev/null \
-                && rm -f "${cached}.tmp.png" \
-                || convert -background none -density 384 \
-                       -resize "${PANEL_SIZE}x${PANEL_SIZE}" \
-                       "$render_src" "$cached" 2>/dev/null ;;
+                if command -v magick >/dev/null 2>&1; then
+                    magick -background none -density 384 "$render_src" \
+                           -resize "${PANEL_SIZE}x${PANEL_SIZE}" "$cached" 2>/dev/null
+                elif command -v convert >/dev/null 2>&1; then
+                    convert -background none -density 384 "$render_src" \
+                            -resize "${PANEL_SIZE}x${PANEL_SIZE}" "$cached" 2>/dev/null
+                elif command -v rsvg-convert >/dev/null 2>&1; then
+                    rsvg-convert -w "$PANEL_SIZE" -h "$PANEL_SIZE" \
+                                 "$render_src" -o "$cached" 2>/dev/null
+                fi ;;
             *.png|*.PNG)
-                convert -resize "${PANEL_SIZE}x${PANEL_SIZE}" \
-                    "$render_src" "$cached" 2>/dev/null ;;
+                if command -v magick >/dev/null 2>&1; then
+                    magick "$render_src" -resize "${PANEL_SIZE}x${PANEL_SIZE}" "$cached" 2>/dev/null
+                elif command -v convert >/dev/null 2>&1; then
+                    convert "$render_src" -resize "${PANEL_SIZE}x${PANEL_SIZE}" "$cached" 2>/dev/null
+                fi ;;
         esac
         [ -f "$cached" ] || cp "$src" "$cached" 2>/dev/null
         [ -n "$tmp_svg" ] && rm -f "$tmp_svg"
