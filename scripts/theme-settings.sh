@@ -832,7 +832,18 @@ show_dimming_dialog() {
 
     # "Test now" button (ret=2) or OK with dimming enabled → apply immediately
     if [ $ret -eq 2 ] || [ "$dm_val" = "enabled" ]; then
-        _reapply_theme
+        local cur_theme
+        cur_theme=$(xfconf-query -c xsettings -p /Net/ThemeName 2>/dev/null || gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null | tr -d "'")
+        local cur_mode="light"
+        [ "$cur_theme" = "$DARK_THEME" ] && cur_mode="dark"
+
+        local dim_script="${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/monitor-dimming.sh"
+        [ ! -f "$dim_script" ] && dim_script="/usr/share/xfce-night-switch/monitor-dimming.sh"
+        [ -x "$dim_script" ] && "$dim_script" "$cur_mode" &
+    fi
+
+    if [ $ret -eq 2 ]; then
+        show_dimming_dialog
     fi
 }
 

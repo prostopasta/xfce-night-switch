@@ -28,7 +28,8 @@ fi
 echo "Linking scripts to $BIN_DIR ..."
 mkdir -p "$BIN_DIR"
 for f in auto-theme.sh toggle-theme.sh theme-settings.sh \
-          sunrise-sunset.py install-panel-launcher.sh auto-update.sh; do
+          sunrise-sunset.py install-panel-launcher.sh auto-update.sh \
+          monitor-dimming.sh; do
     ln -sf "$SHARE/$f" "$BIN_DIR/$f"
     echo "  $BIN_DIR/$f"
 done
