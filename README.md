@@ -78,16 +78,7 @@ Installed automatically by the install script. For manual installs:
 ```bash
 sudo apt install yad curl wget python3 python3-dbus cron
 # Optional (for icon rendering in settings):
-sudo apt install inkscape imagemagick
-```
-
-### Prerequisites
-
-Installed automatically by the install script. For manual installs:
-```bash
-sudo apt install yad curl wget python3 python3-dbus cron
-# Optional (for icon rendering in settings):
-sudo apt install inkscape imagemagick
+sudo apt install imagemagick
 ```
 
 ---
@@ -177,8 +168,7 @@ XFCE has no built-in way to switch Terminator terminal profiles when the system 
 | `yad` | Settings GUI | Usually yes on XFCE |
 | `xfconf-query` | Panel/XFCE config | ✅ XFCE |
 | `gsettings` | GTK theme switching | ✅ GLib |
-| `inkscape` | SVG icon rendering | Often yes |
-| `imagemagick` (`convert`) | PNG scaling fallback | Usually yes |
+| `imagemagick` (`convert`/`magick`) | SVG & PNG icon rendering | Usually yes |
 | `curl` | City search, IP geolocation | ✅ |
 | `python3` | NOAA sunrise/sunset | ✅ |
 | `python3-dbus` | Terminator profile switching | `apt install python3-dbus` |
