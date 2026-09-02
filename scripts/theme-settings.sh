@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=SC1090,SC2155,SC2034,SC2059,SC2086,SC2181,SC2001,SC2015
+# shellcheck disable=SC1090,SC2155,SC2034,SC2059,SC2086,SC2181,SC2001,SC2015,SC2153
 # Theme Switcher Settings — graphical settings dialog.
 
 export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
@@ -32,111 +32,19 @@ LOCALES_DIR="$HOME/.config/xfce-night-switch/locales"
 
 # ── UI strings ──────────────────────────────────────────────────────────────
 _load_strings() {
-    local locale_file="$LOCALES_DIR/${APP_LANG}.sh"
-    # Fall back to system-installed locales (deb package install path)
-    [ -f "$locale_file" ] || locale_file="${XFCE_NIGHT_SWITCH_DIR:-/usr/share/xfce-night-switch}/locales/${APP_LANG}.sh"
-    if [ -f "$locale_file" ]; then
-        source "$locale_file"
-        return
+    # 1. Base system English defaults
+    local sys_en="${XFCE_NIGHT_SWITCH_DIR:-/usr/share/xfce-night-switch}/locales/en.sh"
+    [ -f "$sys_en" ] && source "$sys_en"
+
+    # 2. Base system selected language (e.g. ru.sh)
+    if [ -n "${APP_LANG:-}" ] && [ "$APP_LANG" != "en" ]; then
+        local sys_lang="${XFCE_NIGHT_SWITCH_DIR:-/usr/share/xfce-night-switch}/locales/${APP_LANG}.sh"
+        [ -f "$sys_lang" ] && source "$sys_lang"
     fi
-    # Built-in fallback for en/ru in case locale files are missing
-    if [ "$APP_LANG" = "ru" ]; then
-        S_APP_TITLE="Настройки переключателя тем"
-        S_APP_TEXT="<b>Theme Switcher</b> — выберите настройку:"
-        S_COL_SETTING="Настройка"; S_COL_VALUE="Значение"
-        S_NIGHT_ICON="🌙  Иконка ночи"
-        S_DAY_ICON="☀️  Иконка дня"
-        S_AUTO="⏱️  Авто-переключатель"
-        S_LANG="🌐  Язык приложения"
-        S_LANG_VALUE="Русский"
-        S_AUTO_ON_TIME="✓ По времени"
-        S_AUTO_ON_LOC="✓ По локации"
-        S_AUTO_OFF="✗ Выключен"
-        S_PICKER_NIGHT="Иконка ночного режима"
-        S_PICKER_DAY="Иконка дневного режима"
-        S_PICKER_COL="Тема  •  Иконка"
-        S_PICKER_TEXT="<b>Текущая:</b> %s   <small>(масштабировано до %dpx)</small>"
-        S_PICKER_SUBTEXT="Scalable/symbolic — первыми. Поиск по теме:"
-        S_LOADING="Загрузка иконок..."
-        S_LOADING_PROGRESS="Подготовка: %d/%d"
-        S_NO_ICONS="Иконки не найдены."
-        S_AUTO_TITLE="Авто-переключатель тем"
-        S_AUTO_ENABLE="Включить авто-переключатель"
-        S_AUTO_MODE="Режим переключения"
-        S_AUTO_MODE_OPTS="По времени!По локации"
-        S_AUTO_TIME_HDR="── По времени ───────────"
-        S_DAY_FROM="День с (ЧЧ:ММ):"
-        S_DAY_TO="День до (ЧЧ:ММ):"
-        S_AUTO_LOC_HDR="── По локации ───────────"
-        S_LAT="Широта:"; S_LON="Долгота:"
-        S_CUR_CITY="Текущий город"
-        S_NOT_SET="не задано"
-        S_BTN_FIND="🔍 Найти город"
-        S_BTN_MAP="🌐 Открыть карту"
-        S_BTN_IP="📍 По IP"
-        S_AUTO_ENABLED="Авто-переключатель <b>включён</b> (режим: %s)."
-        S_AUTO_DISABLED="Авто-переключатель <b>выключен</b>."
-        S_CITY_TITLE="Поиск города"
-        S_CITY_PROMPT="Введите название города (на любом языке):"
-        S_CITY_RESULTS="Выберите город"
-        S_CITY_RESULTS_TEXT="Результаты поиска «<b>%s</b>» — выберите нужный:"
-        S_CITY_NOT_FOUND="Город «<b>%s</b>» не найден."
-        S_CITY_PARSE_ERR="Не удалось разобрать результаты."
-        S_IP_ERROR="Не удалось определить локацию по IP."
-        S_LANG_TITLE="Язык приложения"
-        S_LANG_FIELD="Язык:"
-        S_LANG_OPTS="Русский (ru)!English (en)"
-        S_LANG_TEXT="Язык интерфейса и результатов поиска городов."
-    else
-        S_APP_TITLE="Theme Switcher Settings"
-        S_APP_TEXT="<b>Theme Switcher</b> — choose a setting:"
-        S_COL_SETTING="Setting"; S_COL_VALUE="Value"
-        S_NIGHT_ICON="🌙  Night icon"
-        S_DAY_ICON="☀️  Day icon"
-        S_AUTO="⏱️  Auto-switcher"
-        S_LANG="🌐  App language"
-        S_LANG_VALUE="English"
-        S_AUTO_ON_TIME="✓ By time"
-        S_AUTO_ON_LOC="✓ By location"
-        S_AUTO_OFF="✗ Disabled"
-        S_PICKER_NIGHT="Night mode icon"
-        S_PICKER_DAY="Day mode icon"
-        S_PICKER_COL="Theme  •  Icon"
-        S_PICKER_TEXT="<b>Current:</b> %s   <small>(scaled to %dpx)</small>"
-        S_PICKER_SUBTEXT="Scalable/symbolic shown first. Search by theme name:"
-        S_LOADING="Loading icons..."
-        S_LOADING_PROGRESS="Preparing: %d/%d"
-        S_NO_ICONS="No icons found."
-        S_AUTO_TITLE="Theme Auto-switcher"
-        S_AUTO_ENABLE="Enable auto-switcher"
-        S_AUTO_MODE="Switching mode"
-        S_AUTO_MODE_OPTS="By time!By location"
-        S_AUTO_TIME_HDR="── By time ──────────────"
-        S_DAY_FROM="Day start (HH:MM):"
-        S_DAY_TO="Day end (HH:MM):"
-        S_AUTO_LOC_HDR="── By location ──────────"
-        S_LAT="Latitude:"; S_LON="Longitude:"
-        S_CUR_CITY="Current city"
-        S_NOT_SET="not set"
-        S_BTN_FIND="🔍 Find city"
-        S_BTN_MAP="🌐 Open map"
-        S_BTN_IP="📍 Detect by IP"
-        S_AUTO_ENABLED="Auto-switcher <b>enabled</b> (mode: %s)."
-        S_AUTO_DISABLED="Auto-switcher <b>disabled</b>."
-        S_CITY_TITLE="City search"
-        S_CITY_PROMPT="Enter city name (any language):"
-        S_CITY_RESULTS="Select city"
-        S_CITY_RESULTS_TEXT="Results for «<b>%s</b>» — pick one:"
-        S_CITY_NOT_FOUND="City «<b>%s</b>» not found."
-        S_CITY_PARSE_ERR="Could not parse results."
-        S_IP_ERROR="Could not determine location by IP."
-        S_LANG_TITLE="App Language"
-        # shellcheck disable=SC2034
-        S_LANG_FIELD="Language:"
-        # shellcheck disable=SC2034
-        S_LANG_OPTS="English (en)!Русский (ru)"
-        S_LANG_TEXT="UI language and city search results language."
-    fi
+
+    # 3. User config language overrides
+    local user_lang="$LOCALES_DIR/${APP_LANG:-en}.sh"
+    [ -f "$user_lang" ] && source "$user_lang"
 }
 _load_strings
 
@@ -785,65 +693,97 @@ show_panel_dialog() {
 show_dimming_dialog() {
     source "$SWITCHER_CONFIG"; _load_strings
 
+    local init_enabled="${1:-}" init_method="${2:-}" init_ed="${3:-}" init_el="${4:-}" init_xd="${5:-}" init_xl="${6:-}"
+
+    local chk_val
+    if [ -n "$init_enabled" ]; then
+        chk_val="$init_enabled"
+    else
+        [ "${MONITOR_DIMMING:-disabled}" = "enabled" ] && chk_val="TRUE" || chk_val="FALSE"
+    fi
+
     local ddcutil_hint=""
-    command -v ddcutil >/dev/null 2>&1 || ddcutil_hint=" (not installed)"
+    command -v ddcutil >/dev/null 2>&1 || ddcutil_hint=" (${S_NOT_INSTALLED:-not installed})"
+
+    local cur_theme
+    cur_theme=$(xfconf-query -c xsettings -p /Net/ThemeName 2>/dev/null || gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null | tr -d "'")
+    local cur_mode="light"
+    [ "$cur_theme" = "$DARK_THEME" ] && cur_mode="dark"
+
+    local dim_script="${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/monitor-dimming.sh"
+    [ ! -f "$dim_script" ] && dim_script="/usr/share/xfce-night-switch/monitor-dimming.sh"
+
+    local sel_method="${init_method:-${DIMMING_EXT_METHOD:-xrandr}}"
+    local ext_method_opts="xrandr!ddcutil${ddcutil_hint}"
+    [[ "$sel_method" == ddcutil* ]] && ext_method_opts="ddcutil${ddcutil_hint}!xrandr"
+
+    local val_ed="${init_ed:-${DIMMING_EDPI_DARK:-70}}"
+    local val_el="${init_el:-${DIMMING_EDPI_LIGHT:-100}}"
+    local val_xd="${init_xd:-${DIMMING_EXT_DARK:-50}}"
+    local val_xl="${init_xl:-${DIMMING_EXT_LIGHT:-100}}"
 
     local result ret
-    result=$(yad --form \
+    result=$(yad --form --columns=2 \
         --title="${S_DIMMING_TITLE:-🔆  Monitor Dimming}" \
         --window-icon="display-brightness-symbolic" \
-        --width=420 --center \
+        --center \
         --field="${S_DIMMING_ENABLE:-Enable monitor dimming}:CHK" \
-            "$( [ "${MONITOR_DIMMING:-disabled}" = "enabled" ] && echo TRUE || echo FALSE )" \
+            "$chk_val" \
+        --field="${S_DIMMING_EDPI_DARK:-Built-in — Night, %}:NUM" \
+            "${val_ed%.*}!0..100!5" \
+        --field="${S_DIMMING_EDPI_LIGHT:-Built-in — Day, %}:NUM" \
+            "${val_el%.*}!0..100!5" \
         --field="${S_DIMMING_EXT_METHOD:-External method}:CB" \
-            "ddcutil${ddcutil_hint}!xrandr (software)" \
-        --field="${S_DIMMING_EDPI_DARK:-Built-in display — dark theme, %}:NUM" \
-            "${DIMMING_EDPI_DARK:-70}!0..100!5" \
-        --field="${S_DIMMING_EDPI_LIGHT:-Built-in display — light theme, %}:NUM" \
-            "${DIMMING_EDPI_LIGHT:-100}!0..100!5" \
-        --field="${S_DIMMING_EXT_DARK:-External monitors — dark theme, %}:NUM" \
-            "${DIMMING_EXT_DARK:-50}!0..100!5" \
-        --field="${S_DIMMING_EXT_LIGHT:-External monitors — light theme, %}:NUM" \
-            "${DIMMING_EXT_LIGHT:-100}!0..100!5" \
-        --button="${S_TEST:-Test now}!display:2" \
+            "$ext_method_opts" \
+        --field="${S_DIMMING_EXT_DARK:-External — Night, %}:NUM" \
+            "${val_xd%.*}!0..100!5" \
+        --field="${S_DIMMING_EXT_LIGHT:-External — Day, %}:NUM" \
+            "${val_xl%.*}!0..100!5" \
+        --button="${S_DIMMING_TEST_DARK:-🌙 Dark}!display:2" \
+        --button="${S_DIMMING_TEST_LIGHT:-☀️ Light}!display:3" \
         --button="gtk-cancel:1" \
         --button="gtk-ok:0" \
         2>/dev/null)
     ret=$?
-    [ $ret -eq 1 ] && return
+    [ $ret -eq 1 ] && {
+        # Restore current theme brightness on cancel
+        [ -x "$dim_script" ] && [ "${MONITOR_DIMMING:-disabled}" = "enabled" ] && "$dim_script" "$cur_mode" &
+        return
+    }
 
-    local v_enabled v_method v_ed v_el v_xd v_xl
+    local v_enabled v_ed v_el v_method v_xd v_xl
     v_enabled=$(echo "$result" | cut -d'|' -f1)
-    v_method=$(echo "$result"  | cut -d'|' -f2 | awk '{print $1}')
-    v_ed=$(echo "$result"      | cut -d'|' -f3)
-    v_el=$(echo "$result"      | cut -d'|' -f4)
+    v_ed=$(echo "$result"      | cut -d'|' -f2)
+    v_el=$(echo "$result"      | cut -d'|' -f3)
+    v_method=$(echo "$result"  | cut -d'|' -f4 | awk '{print $1}')
     v_xd=$(echo "$result"      | cut -d'|' -f5)
     v_xl=$(echo "$result"      | cut -d'|' -f6)
 
-    local dm_val
-    [ "$v_enabled" = "TRUE" ] && dm_val="enabled" || dm_val="disabled"
-
-    _cfg_set "MONITOR_DIMMING"    "$dm_val"
-    _cfg_set "DIMMING_EXT_METHOD" "$v_method"
-    _cfg_set "DIMMING_EDPI_DARK"  "${v_ed%.*}"
-    _cfg_set "DIMMING_EDPI_LIGHT" "${v_el%.*}"
-    _cfg_set "DIMMING_EXT_DARK"   "${v_xd%.*}"
-    _cfg_set "DIMMING_EXT_LIGHT"  "${v_xl%.*}"
-
-    # "Test now" button (ret=2) or OK with dimming enabled → apply immediately
-    if [ $ret -eq 2 ] || [ "$dm_val" = "enabled" ]; then
-        local cur_theme
-        cur_theme=$(xfconf-query -c xsettings -p /Net/ThemeName 2>/dev/null || gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null | tr -d "'")
-        local cur_mode="light"
-        [ "$cur_theme" = "$DARK_THEME" ] && cur_mode="dark"
-
-        local dim_script="${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/monitor-dimming.sh"
-        [ ! -f "$dim_script" ] && dim_script="/usr/share/xfce-night-switch/monitor-dimming.sh"
-        [ -x "$dim_script" ] && "$dim_script" "$cur_mode" &
-    fi
-
     if [ $ret -eq 2 ]; then
-        show_dimming_dialog
+        # Preview dark brightness directly without writing to config
+        [ -x "$dim_script" ] && "$dim_script" --apply "${v_ed%.*}" "${v_xd%.*}" "$v_method" &
+        show_dimming_dialog "$v_enabled" "$v_method" "$v_ed" "$v_el" "$v_xd" "$v_xl"
+    elif [ $ret -eq 3 ]; then
+        # Preview light brightness directly without writing to config
+        [ -x "$dim_script" ] && "$dim_script" --apply "${v_el%.*}" "${v_xl%.*}" "$v_method" &
+        show_dimming_dialog "$v_enabled" "$v_method" "$v_ed" "$v_el" "$v_xd" "$v_xl"
+    elif [ $ret -eq 0 ]; then
+        # OK: save final configuration
+        local dm_val
+        [ "$v_enabled" = "TRUE" ] && dm_val="enabled" || dm_val="disabled"
+
+        _cfg_set "MONITOR_DIMMING"    "$dm_val"
+        _cfg_set "DIMMING_EXT_METHOD" "$v_method"
+        _cfg_set "DIMMING_EDPI_DARK"  "${v_ed%.*}"
+        _cfg_set "DIMMING_EDPI_LIGHT" "${v_el%.*}"
+        _cfg_set "DIMMING_EXT_DARK"   "${v_xd%.*}"
+        _cfg_set "DIMMING_EXT_LIGHT"  "${v_xl%.*}"
+
+        if [ "$dm_val" = "enabled" ]; then
+            [ -x "$dim_script" ] && "$dim_script" "$cur_mode" &
+        else
+            [ -x "$dim_script" ] && "$dim_script" --apply 100 100 "$v_method" &
+        fi
     fi
 }
 

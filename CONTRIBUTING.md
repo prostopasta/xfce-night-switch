@@ -87,10 +87,10 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/) t
 3. **Open a Pull Request**:
    Push your branch to GitHub and open a PR against the `main` branch.
 
-4. **Automated PR Test Build & Verification**:
-   - The CI pipeline automatically builds a test `.deb` package artifact and posts a test checklist comment on the PR.
-   - Test the generated `.deb` artifact or verify checklist items.
-   - Once verified, commenting `/test-passed` triggers the automated test gate to squash-merge the PR into `main`.
+4. **Automated PR Test Build & Local Verification**:
+   - The CI pipeline automatically builds a test `.deb` package artifact and posts a release link and checklist comment on the PR.
+   - **Crucial Rule**: Never auto-merge PRs. Contributors and maintainers must first download the PR test `.deb` release on their local machine, install it, and verify that the changes work and solve the issue.
+   - Only after local verification succeeds on the actual desktop environment, comment `/test-passed` on the PR to trigger the automated squash-merge into `main`.
 
 ---
 

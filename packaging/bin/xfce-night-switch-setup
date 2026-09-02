@@ -45,13 +45,11 @@ else
     echo "  exists (not overwritten): $CONFIG_DIR/config"
 fi
 
-# Copy locale files without overwriting user edits
+# Install / update built-in locale files
 for f in "$SHARE/locales/"*.sh; do
     dst="$CONFIG_DIR/locales/$(basename "$f")"
-    if [ ! -f "$dst" ]; then
-        cp "$f" "$dst"
-        echo "  locale: $(basename "$f")"
-    fi
+    cp "$f" "$dst"
+    echo "  locale: $(basename "$f")"
 done
 
 # ── Icon ───────────────────────────────────────────────────────────────────
@@ -70,7 +68,7 @@ for name in toggle-theme theme-settings; do
     src="/usr/share/applications/${name}.desktop"
     dst="$APP_DIR/${name}.desktop"
     # Replace the Exec= with $HOME-expanded path for ~/.local/bin
-    sed "s|Exec=.*${name}|Exec=${BIN_DIR}/${name}.sh|" "$src" > "$dst"
+    sed -E "s|Exec=.*${name}(\.sh)?|Exec=${BIN_DIR}/${name}.sh|" "$src" > "$dst"
     echo "  $dst"
 done
 

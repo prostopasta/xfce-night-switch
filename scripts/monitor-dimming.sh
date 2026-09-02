@@ -17,25 +17,6 @@ export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user
 SWITCHER_CONFIG="${HOME}/.config/xfce-night-switch/config"
 [ -f "$SWITCHER_CONFIG" ] && source "$SWITCHER_CONFIG"
 
-[[ "${MONITOR_DIMMING:-disabled}" != "enabled" ]] && exit 0
-
-# ── Resolve target theme ──────────────────────────────────────────────────────
-if [[ "$1" == "light" || "$1" == "dark" ]]; then
-    TARGET="$1"
-else
-    _cur=$(xfconf-query -c xsettings -p /Net/ThemeName 2>/dev/null)
-    [[ "$_cur" == "${DARK_THEME:-Adwaita-dark}" ]] && TARGET="dark" || TARGET="light"
-fi
-
-# ── Resolve brightness values ─────────────────────────────────────────────────
-if [[ "$TARGET" == "dark" ]]; then
-    EDPI_PCTG="${DIMMING_EDPI_DARK:-70}"
-    EXT_PCTG="${DIMMING_EXT_DARK:-50}"
-else
-    EDPI_PCTG="${DIMMING_EDPI_LIGHT:-100}"
-    EXT_PCTG="${DIMMING_EXT_LIGHT:-100}"
-fi
-
 # ── Built-in / internal displays: hardware backlight ─────────────────────────
 _apply_backlight() {
     local pctg="$1"
@@ -92,5 +73,37 @@ _apply_external() {
     fi
 }
 
+# Direct application mode for test/preview
+if [[ "$1" == "--apply" ]]; then
+    EDPI_PCTG="${2:-100}"
+    EXT_PCTG="${3:-100}"
+    DIMMING_EXT_METHOD="${4:-${DIMMING_EXT_METHOD:-xrandr}}"
+    _apply_backlight "$EDPI_PCTG"
+    _apply_external  "$EXT_PCTG"
+    exit 0
+fi
+
+if [[ "$2" != "--force" ]]; then
+    [[ "${MONITOR_DIMMING:-disabled}" != "enabled" ]] && exit 0
+fi
+
+# ── Resolve target theme ──────────────────────────────────────────────────────
+if [[ "$1" == "light" || "$1" == "dark" ]]; then
+    TARGET="$1"
+else
+    _cur=$(xfconf-query -c xsettings -p /Net/ThemeName 2>/dev/null)
+    [[ "$_cur" == "${DARK_THEME:-Adwaita-dark}" ]] && TARGET="dark" || TARGET="light"
+fi
+
+# ── Resolve brightness values ─────────────────────────────────────────────────
+if [[ "$TARGET" == "dark" ]]; then
+    EDPI_PCTG="${DIMMING_EDPI_DARK:-70}"
+    EXT_PCTG="${DIMMING_EXT_DARK:-50}"
+else
+    EDPI_PCTG="${DIMMING_EDPI_LIGHT:-100}"
+    EXT_PCTG="${DIMMING_EXT_LIGHT:-100}"
+fi
+
 _apply_backlight "$EDPI_PCTG"
 _apply_external  "$EXT_PCTG"
+
