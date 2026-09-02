@@ -95,11 +95,27 @@ apply_theme() {
 }
 
 # --- Compute day boundaries ---
-if [ "$AUTO_MODE" = "location" ] && [ -n "$LATITUDE" ] && [ -n "$LONGITUDE" ]; then
-    times=$(python3 "${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/sunrise-sunset.py" "$LATITUDE" "$LONGITUDE" both 2>/dev/null)
-    if [ -n "$times" ]; then
+SUN_CACHE="$HOME/.cache/xfce-night-switch/sun_times"
+if [ "$AUTO_MODE" = "location" ]; then
+    times=""
+    if [ -n "$LATITUDE" ] && [ -n "$LONGITUDE" ]; then
+        py_script="${XFCE_NIGHT_SWITCH_DIR:-$HOME/.local/bin}/sunrise-sunset.py"
+        [ ! -f "$py_script" ] && py_script="/usr/share/xfce-night-switch/sunrise-sunset.py"
+        [ -f "$py_script" ] && times=$(python3 "$py_script" "$LATITUDE" "$LONGITUDE" both 2>/dev/null || true)
+    fi
+
+    if [[ "$times" =~ ^[0-2][0-9]:[0-5][0-9]\ [0-2][0-9]:[0-5][0-9]$ ]]; then
         DAY_START=$(echo "$times" | cut -d' ' -f1)
         DAY_END=$(echo "$times"   | cut -d' ' -f2)
+        mkdir -p "$HOME/.cache/xfce-night-switch"
+        echo "$times" > "$SUN_CACHE"
+    elif [ -f "$SUN_CACHE" ] && [ -s "$SUN_CACHE" ]; then
+        # Fallback to cached times if calculation was unavailable (offline / missing deps)
+        cached_times=$(cat "$SUN_CACHE" 2>/dev/null || true)
+        if [[ "$cached_times" =~ ^[0-2][0-9]:[0-5][0-9]\ [0-2][0-9]:[0-5][0-9]$ ]]; then
+            DAY_START=$(echo "$cached_times" | cut -d' ' -f1)
+            DAY_END=$(echo "$cached_times"   | cut -d' ' -f2)
+        fi
     fi
 fi
 
