@@ -68,7 +68,7 @@ for name in toggle-theme theme-settings; do
     src="/usr/share/applications/${name}.desktop"
     dst="$APP_DIR/${name}.desktop"
     # Replace the Exec= with $HOME-expanded path for ~/.local/bin
-    sed "s|Exec=.*${name}|Exec=${BIN_DIR}/${name}.sh|" "$src" > "$dst"
+    sed -E "s|Exec=.*${name}(\.sh)?|Exec=${BIN_DIR}/${name}.sh|" "$src" > "$dst"
     echo "  $dst"
 done
 

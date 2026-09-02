@@ -714,8 +714,8 @@ show_dimming_dialog() {
     [ ! -f "$dim_script" ] && dim_script="/usr/share/xfce-night-switch/monitor-dimming.sh"
 
     local sel_method="${init_method:-${DIMMING_EXT_METHOD:-xrandr}}"
-    local ext_method_opts="xrandr (software)!ddcutil (hardware DDC/CI)${ddcutil_hint}"
-    [[ "$sel_method" == ddcutil* ]] && ext_method_opts="ddcutil (hardware DDC/CI)${ddcutil_hint}!xrandr (software)"
+    local ext_method_opts="xrandr!ddcutil${ddcutil_hint}"
+    [[ "$sel_method" == ddcutil* ]] && ext_method_opts="ddcutil${ddcutil_hint}!xrandr"
 
     local val_ed="${init_ed:-${DIMMING_EDPI_DARK:-70}}"
     local val_el="${init_el:-${DIMMING_EDPI_LIGHT:-100}}"
@@ -723,24 +723,24 @@ show_dimming_dialog() {
     local val_xl="${init_xl:-${DIMMING_EXT_LIGHT:-100}}"
 
     local result ret
-    result=$(yad --form \
+    result=$(yad --form --columns=2 \
         --title="${S_DIMMING_TITLE:-🔆  Monitor Dimming}" \
         --window-icon="display-brightness-symbolic" \
-        --width=380 --center \
+        --center \
         --field="${S_DIMMING_ENABLE:-Enable monitor dimming}:CHK" \
             "$chk_val" \
+        --field="${S_DIMMING_EDPI_DARK:-Built-in — Night, %}:NUM" \
+            "${val_ed%.*}!0..100!5" \
+        --field="${S_DIMMING_EDPI_LIGHT:-Built-in — Day, %}:NUM" \
+            "${val_el%.*}!0..100!5" \
         --field="${S_DIMMING_EXT_METHOD:-External method}:CB" \
             "$ext_method_opts" \
-        --field="${S_DIMMING_EDPI_DARK:-Built-in display — dark theme, %}:NUM" \
-            "${val_ed%.*}!0..100!5" \
-        --field="${S_DIMMING_EDPI_LIGHT:-Built-in display — light theme, %}:NUM" \
-            "${val_el%.*}!0..100!5" \
-        --field="${S_DIMMING_EXT_DARK:-External monitors — dark theme, %}:NUM" \
+        --field="${S_DIMMING_EXT_DARK:-External — Night, %}:NUM" \
             "${val_xd%.*}!0..100!5" \
-        --field="${S_DIMMING_EXT_LIGHT:-External monitors — light theme, %}:NUM" \
+        --field="${S_DIMMING_EXT_LIGHT:-External — Day, %}:NUM" \
             "${val_xl%.*}!0..100!5" \
-        --button="${S_DIMMING_TEST_DARK:-🌙 Test Dark}!display:2" \
-        --button="${S_DIMMING_TEST_LIGHT:-☀️ Test Light}!display:3" \
+        --button="${S_DIMMING_TEST_DARK:-🌙 Dark}!display:2" \
+        --button="${S_DIMMING_TEST_LIGHT:-☀️ Light}!display:3" \
         --button="gtk-cancel:1" \
         --button="gtk-ok:0" \
         2>/dev/null)
@@ -751,11 +751,11 @@ show_dimming_dialog() {
         return
     }
 
-    local v_enabled v_method v_ed v_el v_xd v_xl
+    local v_enabled v_ed v_el v_method v_xd v_xl
     v_enabled=$(echo "$result" | cut -d'|' -f1)
-    v_method=$(echo "$result"  | cut -d'|' -f2 | awk '{print $1}')
-    v_ed=$(echo "$result"      | cut -d'|' -f3)
-    v_el=$(echo "$result"      | cut -d'|' -f4)
+    v_ed=$(echo "$result"      | cut -d'|' -f2)
+    v_el=$(echo "$result"      | cut -d'|' -f3)
+    v_method=$(echo "$result"  | cut -d'|' -f4 | awk '{print $1}')
     v_xd=$(echo "$result"      | cut -d'|' -f5)
     v_xl=$(echo "$result"      | cut -d'|' -f6)
 
