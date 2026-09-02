@@ -32,8 +32,9 @@
 | Panel launcher with icon | ✅ | GenMon text | ❌ | ❌ |
 | Live icon changes day↔night | ✅ | ❌ | ❌ | ❌ |
 | Graphical icon picker (96+ icons) | ✅ | ❌ | ❌ | ❌ |
-| GTK theme selector (scans system) | ✅ | ❌ | ❌ | ❌ |
+| GTK theme selector (scans) | ✅ | ❌ | ❌ | ❌ |
 | Terminator profile sync | ✅ | ❌ | ❌ | ❌ |
+| Monitor brightness dimming | ✅ | ❌ | ❌ | ❌ |
 | Icons scaled to panel size | ✅ | ❌ | ❌ | ❌ |
 | Time-based schedule | ✅ | ✅ | ✅ | ❌ |
 | Sunrise/sunset by location | ✅ | ✅ | ✅ | ❌ |
@@ -61,12 +62,18 @@ Checks for missing prerequisites, downloads the latest `.deb`, installs with `su
 
 ```bash
 git clone https://github.com/prostopasta/xfce-night-switch.git
-cd xfce-night-switch && bash install.sh
+cd xfce-night-switch
+bash install.sh
 ```
 
-Same `install.sh` — auto-detects it's running from a git clone and installs from local source files instead.
+### Update to latest version
 
-To remove:
+```bash
+xfce-night-switch-setup    # or: bash ~/.local/bin/auto-update.sh
+```
+
+### Uninstall
+
 ```bash
 sudo dpkg -r xfce-night-switch      # remove (keeps config)
 sudo dpkg -P xfce-night-switch      # purge (removes config too)
@@ -77,8 +84,10 @@ sudo dpkg -P xfce-night-switch      # purge (removes config too)
 Installed automatically by the install script. For manual installs:
 ```bash
 sudo apt install yad curl wget python3 python3-dbus cron
-# Optional (for icon rendering in settings):
+# Optional (for SVG/PNG icon rendering in settings):
 sudo apt install imagemagick
+# Optional (for monitor brightness dimming):
+sudo apt install ddcutil i2c-tools
 ```
 
 ---
@@ -101,13 +110,12 @@ sudo apt install imagemagick
             │   xfconf-query + gsettings + xfwm4 theme             │
             └──────────┬───────────────────────────────────────────┘
                        │
-         ┌─────────────┼────────────────────────────────┐
-         │             │                                │
-         ▼             ▼                                ▼
-  Terminator     Panel icon update              auto-theme.sh
-  profile switch  (launcher-N/*.desktop)        (cron, every min)
-  (DBus)          day ☀️ / night 🌙            time or location mode
-                                                (NOAA sunrise/sunset)
+         ┌─────────────┼───────────────────┬─────────────────────┐
+         │             │                   │                     │
+         ▼             ▼                   ▼                     ▼
+  Terminator     Panel icon update   Monitor Dimming        auto-theme.sh
+  profile switch  (launcher-N/*.desktop) (eDP / ddcutil/xrandr) (cron, every min)
+  (DBus)          day ☀️ / night 🌙                              time or location
 ```
 
 ### Panel launcher
@@ -132,6 +140,7 @@ The panel icon updates on every toggle and every cron run (every minute). If you
 │  🎨 Themes           │  [opens theme dialog]   │
 │  🖥️ Panel launcher   │  panel-0 (plugin-100)   │
 │  ⏱️ Auto-switcher    │  ✓ By location          │
+│  🔆 Monitor Dimming  │  ✓ Enabled (ddcutil)    │
 │  🌐 App language     │  English                │
 │  🔄 Restart panel    │                         │
 └──────────────────────┴─────────────────────────┘

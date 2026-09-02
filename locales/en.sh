@@ -1,6 +1,7 @@
 # Theme Switcher locale: English
 # Copy this file to a new locale (e.g. de.sh, fr.sh) and translate the values.
 # Then select it via "App language" in the settings dialog.
+# shellcheck shell=bash disable=SC2034
 S_APP_TITLE="Theme Switcher Settings"
 S_APP_TEXT="<b>Theme Switcher</b> — choose a setting:"
 S_COL_SETTING="Setting"; S_COL_VALUE="Value"
@@ -86,3 +87,14 @@ S_PANEL_CHOOSE="Select which panel to install the launcher on:"
 S_PANEL_CLOCK="★ clock"
 S_PANEL_INSTALLED="✓ installed here"
 S_PANEL_DONE="Launcher installed on"
+
+# Monitor dimming
+S_DIMMING_TITLE="🔆  Monitor Dimming"
+S_DIMMING_ENABLE="Enable monitor dimming"
+S_DIMMING_EXT_METHOD="External method"
+S_DIMMING_EDPI_DARK="Built-in display — dark theme, %"
+S_DIMMING_EDPI_LIGHT="Built-in display — light theme, %"
+S_DIMMING_EXT_DARK="External monitors — dark theme, %"
+S_DIMMING_EXT_LIGHT="External monitors — light theme, %"
+S_ENABLED="Enabled"
+S_DISABLED="Disabled"

@@ -1,4 +1,5 @@
 # Theme Switcher locale: Русский
+# shellcheck shell=bash disable=SC2034
 S_APP_TITLE="Настройки переключателя тем"
 S_APP_TEXT="<b>Theme Switcher</b> — выберите настройку:"
 S_COL_SETTING="Настройка"; S_COL_VALUE="Значение"
@@ -84,3 +85,14 @@ S_PANEL_CHOOSE="Выберите панель для установки launcher
 S_PANEL_CLOCK="★ часы"
 S_PANEL_INSTALLED="✓ установлен здесь"
 S_PANEL_DONE="Launcher установлен на"
+
+# Monitor dimming
+S_DIMMING_TITLE="🔆  Яркость мониторов"
+S_DIMMING_ENABLE="Включить управление яркостью"
+S_DIMMING_EXT_METHOD="Метод для внешних мониторов"
+S_DIMMING_EDPI_DARK="Встроенный дисплей — тёмная тема, %"
+S_DIMMING_EDPI_LIGHT="Встроенный дисплей — светлая тема, %"
+S_DIMMING_EXT_DARK="Внешние мониторы — тёмная тема, %"
+S_DIMMING_EXT_LIGHT="Внешние мониторы — светлая тема, %"
+S_ENABLED="Включено"
+S_DISABLED="Отключено"

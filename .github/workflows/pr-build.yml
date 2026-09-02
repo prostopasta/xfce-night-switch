@@ -119,6 +119,14 @@ jobs:
           echo "Test plan ($(wc -l < /tmp/test-checklist.txt) items):"
           cat /tmp/test-checklist.txt
 
+      - name: Install test dependencies
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick
+
+      - name: Run test suite
+        run: |
+          bash tests/run-tests.sh
+
       - name: Build .deb
         env:
           VERSION: ${{ steps.info.outputs.version }}
@@ -139,6 +147,7 @@ jobs:
           install -m755 scripts/install-panel-launcher.sh "$SHARE/install-panel-launcher.sh"
           install -m755 scripts/sunrise-sunset.py         "$SHARE/sunrise-sunset.py"
           install -m755 scripts/auto-update.sh            "$SHARE/auto-update.sh"
+          install -m755 scripts/monitor-dimming.sh        "$SHARE/monitor-dimming.sh"
           install -m644 packaging/config.default          "$SHARE/config.default"
           install -m644 locales/en.sh                     "$SHARE/locales/en.sh"
           install -m644 locales/ru.sh                     "$SHARE/locales/ru.sh"
