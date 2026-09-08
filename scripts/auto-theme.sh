@@ -3,7 +3,7 @@
 export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
 export DISPLAY=:0
 
-PID=$(pgrep -u "$LOGNAME" xfce4-session | head -n 1)
+PID=$(pgrep -u "${LOGNAME:-$(id -un)}" xfce4-session 2>/dev/null | head -n 1 || true)
 [ -z "$PID" ] && { echo "No XFCE session."; exit 1; }
 
 LIGHT_THEME="Adwaita"
