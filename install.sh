@@ -128,12 +128,10 @@ _install_source() {
 
     echo ""
     echo "── Cron job ───────────────────────────────────"
-    if ! crontab -l 2>/dev/null | grep -q 'auto-theme.sh'; then
-        (crontab -l 2>/dev/null; echo "*/1 * * * * $BIN/auto-theme.sh") | crontab -
-        echo "  added: auto-theme.sh (every minute)"
-    else
-        echo "  skipped (exists): cron auto-theme.sh"
-    fi
+    log_dir="$HOME/.local/share/xfce-night-switch"
+    mkdir -p "$log_dir"
+    (crontab -l 2>/dev/null | grep -v 'auto-theme\.sh' || true; echo "*/1 * * * * $BIN/auto-theme.sh >> $log_dir/auto-theme.log 2>&1") | crontab -
+    echo "  configured: auto-theme.sh (every minute, log: $log_dir/auto-theme.log)"
 
     echo ""
     echo "── XFCE Panel launcher ────────────────────────"

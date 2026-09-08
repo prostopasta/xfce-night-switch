@@ -113,20 +113,12 @@ LOG_DIR="$HOME/.local/share/xfce-night-switch"
 CRON_CMD="*/1 * * * * $BIN_DIR/auto-theme.sh >> $LOG_DIR/auto-theme.log 2>&1"
 if [ "${AUTO_SWITCHER:-enabled}" = "enabled" ]; then
     mkdir -p "$LOG_DIR"
-    if ! crontab -l 2>/dev/null | grep -q 'auto-theme.sh'; then
-        (crontab -l 2>/dev/null; echo "$CRON_CMD") | crontab -
-        echo "Cron: auto-theme.sh added (every minute, log: $LOG_DIR/auto-theme.log)"
-    else
-        # Migrate old entry without log redirect
-        if ! crontab -l 2>/dev/null | grep -q 'auto-theme.log'; then
-            crontab -l 2>/dev/null \
-                | sed "s|.*/auto-theme\.sh.*|$CRON_CMD|" \
-                | crontab -
-            echo "Cron: updated (added log redirect)"
-        else
-            echo "Cron: already present"
-        fi
-    fi
+    # Cleanly remove any legacy or malformed entries and add the correct command
+    (crontab -l 2>/dev/null | grep -v 'auto-theme\.sh' || true; echo "$CRON_CMD") | crontab -
+    echo "Cron: auto-theme.sh configured (every minute, log: $LOG_DIR/auto-theme.log)"
+else
+    crontab -l 2>/dev/null | grep -v 'auto-theme\.sh' | crontab - 2>/dev/null || true
+    echo "Cron: disabled in config"
 fi
 
 echo ""

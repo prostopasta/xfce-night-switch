@@ -436,10 +436,11 @@ show_auto_dialog() {
     [ -n "$v_lat" ] && _cfg_set "LATITUDE"  "$v_lat"
     [ -n "$v_lon" ] && _cfg_set "LONGITUDE" "$v_lon"
     if [ "$new_enabled" = "enabled" ]; then
-        crontab -l 2>/dev/null | grep -q 'auto-theme.sh' \
-        || (crontab -l 2>/dev/null; echo "*/1 * * * * $HOME/.local/bin/auto-theme.sh") | crontab -
+        local log_dir="$HOME/.local/share/xfce-night-switch"
+        mkdir -p "$log_dir"
+        (crontab -l 2>/dev/null | grep -v 'auto-theme\.sh' || true; echo "*/1 * * * * $HOME/.local/bin/auto-theme.sh >> $log_dir/auto-theme.log 2>&1") | crontab -
     else
-        crontab -l 2>/dev/null | grep -v 'auto-theme.sh' | crontab -
+        crontab -l 2>/dev/null | grep -v 'auto-theme\.sh' | crontab - 2>/dev/null || true
     fi
     _reapply_theme
     local msg; msg=$(printf "$S_AUTO_ENABLED" "$new_mode")
